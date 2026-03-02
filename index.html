@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyfrowe.pl – Zoptymalizowany Checkout</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #1a1a1a; background: #f5f5f5; line-height: 1.5; }
+        a { color: #1a1a1a; cursor: pointer; }
+        button { cursor: pointer; font-family: inherit; }
+
+        /* ===== FRAME ===== */
+        .frame { max-width: 1100px; margin: 0 auto; background: #fff; min-height: 100vh; }
+        .ck-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid #e0e0e0; }
+        .logo { font-size: 22px; font-weight: 700; letter-spacing: -.5px; border: 2px solid #1a1a1a; padding: 4px 12px; line-height: 1.2; text-decoration: none; color: #1a1a1a; }
+        .login-link { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: #1a1a1a; font-size: 11px; }
+        .login-link svg { width: 22px; height: 22px; }
+
+        /* ===== VIEWS ===== */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* ===== STEPPER ===== */
+        .stepper { display: flex; justify-content: center; align-items: flex-start; padding: 28px 0 24px; gap: 0; }
+        .step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; min-width: 100px; }
+        .step-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; border: 2px solid #ccc; color: #999; background: #fff; transition: all .2s; }
+        .step.active .step-circle { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+        .step.done .step-circle { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+        .step-label { font-size: 12px; color: #999; margin-top: 6px; font-weight: 500; }
+        .step.active .step-label { color: #1a1a1a; font-weight: 600; }
+        .step.done .step-label { color: #1a1a1a; }
+        .step-line { flex: 1; height: 2px; background: #ddd; margin-top: 18px; min-width: 60px; }
+        .step-line.done { background: #1a1a1a; }
+
+        /* ===== CART VIEW ===== */
+        .cart-body { padding: 0 32px 48px; }
+        .breadcrumb { font-size: 12px; color: #888; padding: 12px 0 0; }
+        .breadcrumb a { color: #1a1a1a; font-size: 12px; }
+        .cart-title { font-size: 22px; font-weight: 700; margin: 12px 0 20px; }
+        .cart-layout { display: flex; gap: 32px; align-items: flex-start; }
+        .cart-main { flex: 1; min-width: 0; }
+        .cart-side { width: 310px; flex-shrink: 0; }
+        .cart-item { display: flex; gap: 16px; padding: 20px 0; border-top: 1px solid #eee; align-items: center; }
+        .cart-item:first-child { border-top: none; }
+        .cart-thumb { width: 80px; height: 80px; background: #f5f5f5; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-name { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+        .cart-item-name a { text-decoration: none; color: #1a1a1a; }
+        .cart-avail { font-size: 11px; color: #4CAF50; display: flex; align-items: center; gap: 4px; margin-top: 3px; }
+        .cart-avail .gd { width: 6px; height: 6px; background: #4CAF50; border-radius: 50%; display: inline-block; }
+        .cart-item-right { text-align: right; flex-shrink: 0; }
+        .cart-item-right .trash { font-size: 16px; color: #bbb; cursor: pointer; display: block; text-align: right; margin-bottom: 8px; text-decoration: none; }
+        .cart-item-right .trash:hover { color: #999; }
+        .cart-qty { display: inline-flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 6px; }
+        .cart-qty button { width: 30px; height: 30px; border: none; background: none; font-size: 16px; color: #888; display: flex; align-items: center; justify-content: center; }
+        .cart-qty button:hover { color: #1a1a1a; }
+        .cart-qty span { width: 30px; text-align: center; font-size: 13px; font-weight: 600; }
+        .cart-item-price { font-size: 15px; font-weight: 700; }
+        .cart-item-unit { font-size: 11px; color: #888; }
+        .cart-clear { font-size: 12px; color: #888; text-decoration: underline; margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+        /* Cart sidebar */
+        .cs-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; background: #fafafa; }
+        .cs-row { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 4px; }
+        .cs-div { border: 0; border-top: 1px solid #eee; margin: 12px 0; }
+        .cs-total { display: flex; justify-content: space-between; align-items: baseline; }
+        .cs-total-label { font-size: 16px; font-weight: 700; }
+        .cs-total-price { font-size: 22px; font-weight: 700; }
+        .cs-hint { font-size: 12px; color: #888; margin-top: 8px; }
+        .cs-cta { width: 100%; padding: 14px; background: #E30613; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 700; margin-top: 16px; transition: background .15s; }
+        .cs-cta:hover { background: #c70511; }
+        .coupon-row { display: flex; gap: 0; margin-top: 16px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; align-items: center; padding-left: 12px; }
+        .coupon-row svg { flex-shrink: 0; color: #999; }
+        .coupon-input { flex: 1; padding: 10px 8px; border: none; font-size: 13px; font-family: inherit; outline: none; background: transparent; }
+        .coupon-btn { padding: 10px 16px; background: none; border: none; border-left: 1px solid #ccc; font-size: 13px; font-weight: 600; color: #999; }
+        .recaptcha-note { font-size: 10px; color: #bbb; margin-top: 12px; line-height: 1.4; }
+        .recaptcha-note a { color: #bbb; }
+        .free-del-hint { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; margin-top: 8px; }
+        .free-del-hint svg { flex-shrink: 0; }
+        /* "Klienci kupili" */
+        .also-bought { margin-top: 32px; }
+        .also-bought h3 { font-size: 18px; font-weight: 700; color: #E30613; margin-bottom: 14px; }
+        .also-row { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+        .also-item { width: 120px; flex-shrink: 0; text-align: center; }
+        .also-item .also-thumb { width: 100px; height: 100px; background: #f5f5f5; border-radius: 4px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+
+        /* ===== CHECKOUT LAYOUT ===== */
+        .ck-body { display: flex; gap: 32px; padding: 0 32px 64px; align-items: flex-start; }
+        .ck-main { flex: 1; min-width: 0; }
+        .ck-side { width: 310px; flex-shrink: 0; position: sticky; top: 20px; }
+
+        /* ===== SECTION HEADERS (cyfrowe.pl style) ===== */
+        .sec-head { font-size: 18px; font-weight: 700; padding: 24px 0 16px; }
+        .sec-head:first-child { padding-top: 0; }
+        .section-sep { border: 0; border-top: 1px solid #e8e8e8; margin: 0; }
+
+        /* ===== FORM FIELDS (outlined style like cyfrowe.pl) ===== */
+        .fg { position: relative; margin-bottom: 12px; }
+        .fr { display: flex; gap: 10px; }
+        .fr .fg { flex: 1; }
+        .fr .fg.sm { flex: 0 0 110px; }
+        .fi { width: 100%; padding: 15px 12px 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background: #fff; outline: none; transition: border-color .15s; color: #1a1a1a; font-family: inherit; }
+        .fi:focus { border-color: #1a1a1a; }
+        .fi::placeholder { color: transparent; }
+        .fl { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: #999; pointer-events: none; transition: all .15s; background: #fff; padding: 0 3px; }
+        .fi:focus + .fl, .fi:not(:placeholder-shown) + .fl { top: 0; font-size: 10px; color: #666; }
+        .fi.ic { padding-left: 36px; }
+        .fi-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #bbb; }
+        .fg.has-icon .fl { left: 36px; }
+        .fi.ic:focus + .fi-icon + .fl, .fi.ic:not(:placeholder-shown) + .fi-icon + .fl { left: 12px; top: 0; font-size: 10px; }
+        .fi.filled + .fl, .fi:disabled + .fl { top: 0; font-size: 10px; color: #666; }
+        .fi:disabled { background: #f9f9f9; color: #444; }
+        select.fi { padding: 14px 32px 4px 12px; -webkit-appearance: none; appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+        select.fi + .fl { top: 0; font-size: 10px; color: #666; }
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .contact-grid .fg { margin-bottom: 0; }
+
+        /* ===== FAKTURA ===== */
+        .fak-area { padding-top: 4px; }
+        .fak-info { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; margin-bottom: 10px; }
+        .fak-info svg { flex-shrink: 0; }
+        .fak-form { display: none; margin-top: 12px; padding: 16px; background: #fafafa; border: 1px solid #eee; border-radius: 6px; }
+        .fak-form.vis { display: block; }
+        .fak-type-toggle { display: flex; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
+        .fak-type-btn { flex: 1; padding: 9px 12px; border: none; background: #fff; font-size: 12px; font-weight: 500; color: #666; cursor: pointer; transition: all .15s; text-align: center; }
+        .fak-type-btn:first-child { border-right: 1px solid #e0e0e0; }
+        .fak-type-btn.active { background: #1a1a1a; color: #fff; font-weight: 600; }
+        .fak-type-btn:hover:not(.active) { background: #f5f5f5; }
+        .gus-row { display: flex; gap: 10px; align-items: flex-start; }
+        .gus-row .fg { flex: 1; }
+        .gus-btn { padding: 11px 18px; background: #E30613; color: #fff; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+        .gus-btn:hover { background: #c70511; }
+        .gus-result { margin-top: 4px; animation: fadeUp .25s ease; }
+        .gus-success { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #2E7D32; font-weight: 600; margin-bottom: 10px; }
+        .fak-sub { display: none; }
+        .fak-sub.vis { display: block; }
+
+        /* ===== DELIVERY CARDS ===== */
+        .dc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 6px; transition: border-color .15s; cursor: pointer; overflow: hidden; }
+        .dc:hover { border-color: #bbb; }
+        .dc.sel { border-color: #1a1a1a; border-width: 2px; cursor: default; }
+        .dc.salon { background: #FFFBEB; border-color: #EED98B; }
+        .dc.salon.sel { border-color: #1a1a1a; }
+        .dc-head { display: flex; align-items: center; padding: 12px 14px; gap: 12px; }
+        .dc-radio { width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color .15s; }
+        .dc.sel .dc-radio { border-color: #1a1a1a; }
+        .dc-radio .dot { width: 10px; height: 10px; border-radius: 50%; background: #1a1a1a; transform: scale(0); transition: transform .15s; }
+        .dc.sel .dc-radio .dot { transform: scale(1); }
+        .dc-icon { width: 42px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; overflow: hidden; font-size: 9px; color: #fff; }
+        .dc-icon.inpost { background: #FFCB04; color: #1a1a1a; } .dc-icon.dpd { background: #DC0032; }
+        .dc-icon.inpost-k { background: #FF6600; } .dc-icon.pocztex { background: #DC143C; }
+        .dc-icon.salon-i { background: none; font-size: 22px; color: #1a1a1a; }
+        .dc-info { flex: 1; min-width: 0; }
+        .dc-info .nm { font-size: 14px; font-weight: 600; display: block; }
+        .dc-info .sub { font-size: 11px; color: #888; display: block; margin-top: 1px; }
+        .dc-price { font-size: 14px; font-weight: 700; white-space: nowrap; }
+        .dc-exp { max-height: 0; overflow: hidden; transition: max-height .35s cubic-bezier(.4,0,.2,1); }
+        .dc.sel .dc-exp { max-height: 600px; }
+        .dc-exp-inner { padding: 0 14px 14px; border-top: 1px solid #eee; }
+        .dc.sel .dc-exp-inner { padding-top: 14px; }
+        .pm-box { background: #f9f9f9; border-radius: 6px; padding: 12px 14px; }
+        .pm-box .pm-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+        .pm-box .pm-id { font-weight: 700; font-size: 15px; margin-top: 2px; }
+        .pm-box .pm-addr { font-size: 13px; color: #444; margin-top: 2px; }
+        .pm-box .pm-hint { font-size: 12px; color: #999; font-style: italic; margin-top: 2px; }
+        .ch-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #1a1a1a; text-decoration: underline; margin-top: 8px; cursor: pointer; }
+        .ch-link svg { width: 12px; height: 12px; }
+        .cour-form { padding-top: 4px; }
+        .cour-form .cour-label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+
+        /* Salon selection */
+        .salon-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .s-chip { padding: 7px 14px; border: 1px solid #ddd; border-radius: 18px; font-size: 12px; cursor: pointer; transition: all .15s; background: #fff; }
+        .s-chip:hover { border-color: #999; background: #fafafa; }
+        .s-chip.sel { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+        .salon-detail { max-height: 0; overflow: hidden; transition: max-height .3s cubic-bezier(.4,0,.2,1); }
+        .salon-detail.vis { max-height: 250px; }
+        .salon-selected-box { margin-top: 12px; background: #E8F5E9; border: 2px solid #4CAF50; border-radius: 8px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+        .salon-selected-box .sa-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #2E7D32; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+        .salon-selected-box .sa-badge svg { flex-shrink: 0; }
+        .salon-selected-box .sa-name { font-weight: 700; font-size: 14px; }
+        .salon-selected-box .sa-line { font-size: 13px; color: #444; margin-top: 1px; }
+        .salon-selected-box .sa-hours { font-size: 11px; color: #888; margin-top: 4px; }
+
+        /* ===== PAYMENT ===== */
+        .pc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 5px; cursor: pointer; transition: border-color .15s; overflow: hidden; }
+        .pc:hover { border-color: #bbb; }
+        .pc.sel { border-color: #1a1a1a; border-width: 2px; }
+        .pc-head { display: flex; align-items: center; padding: 10px 14px; gap: 12px; }
+        .pc-radio { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color .15s; }
+        .pc.sel .pc-radio { border-color: #1a1a1a; }
+        .pc-radio .dot { width: 9px; height: 9px; border-radius: 50%; background: #1a1a1a; transform: scale(0); transition: transform .15s; }
+        .pc.sel .pc-radio .dot { transform: scale(1); }
+        .pi { width: 34px; height: 22px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; flex-shrink: 0; color: #fff; }
+        .pi.visa { background: linear-gradient(135deg,#1A1F71,#2B3990); } .pi.gpay { background: #fff; border: 1px solid #ddd; color: #4285F4; font-size: 12px; }
+        .pi.przelew { background: #2E7D32; font-size: 14px; } .pi.blik { background: #1a1a1a; font-size: 11px; font-weight: 900; }
+        .pi.raty { background: #E30613; } .pi.pobr { background: #555; font-size: 11px; }
+        .pi.trad { background: #444; font-size: 12px; } .pi.gift { background: #7B1FA2; font-size: 11px; }
+        .pc-info .nm { font-size: 13px; font-weight: 500; } .pc-info .sub { font-size: 11px; color: #888; }
+        .gpay-exp { max-height: 0; overflow: hidden; transition: max-height .25s; }
+        .pc.sel .gpay-exp { max-height: 50px; }
+        .gpay-hint { padding: 8px 14px; border-top: 1px solid #eee; font-size: 11px; color: #4CAF50; display: flex; align-items: center; gap: 6px; }
+        .gc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 5px; cursor: pointer; }
+        .gc-head { display: flex; align-items: center; padding: 10px 14px; gap: 12px; }
+        .gc-chk { width: 16px; height: 16px; border: 2px solid #ccc; border-radius: 3px; flex-shrink: 0; }
+
+        /* ===== CONSENTS (cyfrowe.pl style — always visible) ===== */
+        .consent-area { padding-top: 0; }
+        .cb-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+        .cb-row input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; accent-color: #1a1a1a; }
+        .cb-text { font-size: 13px; color: #444; line-height: 1.5; }
+        .cb-text a { color: #1a1a1a; text-decoration: underline; }
+        .cb-text strong { font-weight: 600; }
+        .consent-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+        .uwagi-section { padding-top: 4px; }
+        .uwagi-label { font-size: 14px; color: #666; }
+        .uwagi-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1a1a1a; text-decoration: underline; cursor: pointer; margin-top: 4px; }
+        .uwagi-toggle svg { width: 12px; height: 12px; }
+        .uwagi-panel { max-height: 0; overflow: hidden; transition: max-height .3s; }
+        .uwagi-panel.vis { max-height: 200px; }
+        .uwagi-panel-inner { padding-top: 12px; }
+
+        /* ===== SIDEBAR ===== */
+        .side-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 12px; background: #fafafa; }
+        .s-row { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 4px; }
+        .s-div { border: 0; border-top: 1px solid #eee; margin: 12px 0; }
+        .s-total { display: flex; justify-content: space-between; align-items: baseline; }
+        .s-total-label { font-size: 16px; font-weight: 700; }
+        .s-total-price { font-size: 22px; font-weight: 700; transition: color .15s; }
+        .s-total-price.flash { color: #E30613; }
+        .cta { width: 100%; padding: 14px; background: #E30613; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 700; transition: background .15s; margin-top: 16px; }
+        .cta:hover { background: #c70511; }
+        .s-del-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 11px; color: #888; display: none; }
+        .s-del-info.vis { display: block; }
+        .s-del-info .sdi-m { font-weight: 600; color: #1a1a1a; font-size: 12px; }
+        .order-sec { border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
+        .order-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .order-head .chev { font-size: 16px; color: #999; }
+        .order-body { padding: 0 16px 14px; }
+        .ord-prod { display: flex; gap: 10px; align-items: center; }
+        .ord-thumb { width: 52px; height: 52px; background: #f5f5f5; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .ord-prod .pn { font-size: 12px; font-weight: 500; }
+        .ord-prod .av { font-size: 10px; color: #4CAF50; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+        .gd { width: 6px; height: 6px; background: #4CAF50; border-radius: 50%; display: inline-block; }
+
+        /* ===== CONFIRMATION ===== */
+        .conf-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; align-items: center; justify-content: center; }
+        .conf-overlay.vis { display: flex; }
+        .conf-box { background: #fff; border-radius: 12px; padding: 48px 40px; text-align: center; max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.2); animation: confIn .3s ease; }
+        @keyframes confIn { from { transform: scale(.95); opacity:0; } to { transform: scale(1); opacity:1; } }
+        .conf-box h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+        .conf-box .cnr { font-size: 13px; color: #666; margin-bottom: 20px; } .conf-box .cnr a { color: #1a1a1a; }
+        .conf-box .cs { font-size: 13px; color: #4CAF50; font-weight: 600; }
+        .conf-close { margin-top: 20px; padding: 10px 32px; border: 1px solid #ddd; border-radius: 4px; background: #fff; font-size: 13px; cursor: pointer; }
+
+        /* Back link */
+        .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #888; text-decoration: none; margin-bottom: 8px; cursor: pointer; }
+        .back-link:hover { color: #1a1a1a; }
+        .back-link svg { width: 14px; height: 14px; }
+
+        @media (max-width: 800px) {
+            .ck-body, .cart-layout { flex-direction: column; }
+            .ck-side, .cart-side { width: 100%; position: static; order: -1; margin-bottom: 16px; }
+            .cart-body { padding: 0 16px 32px; }
+            .ck-body { padding: 0 16px 48px; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .stepper { padding: 20px 16px; }
+        }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="frame">
+    <!-- ===== HEADER ===== -->
+    <header class="ck-header">
+        <a class="logo" href="#">cyfr<span style="position:relative;">o<span style="position:absolute;top:-7px;right:-1px;font-size:11px;">&#176;</span></span>we.pl</a>
+        <a class="login-link" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Zaloguj
+        </a>
+    </header>
+
+    <!-- =========================================================== -->
+    <!-- VIEW: KOSZYK (CART)                                         -->
+    <!-- =========================================================== -->
+    <div class="view active" id="view-cart">
+        <div class="cart-body">
+            <div class="breadcrumb"><a href="#">Cyfrowe.pl</a> / Koszyk</div>
+            <h1 class="cart-title">Koszyk (2)</h1>
+            <div class="cart-layout">
+                <div class="cart-main">
+                    <!-- Product 1 -->
+                    <div class="cart-item">
+                        <div class="cart-thumb">&#127890;</div>
+                        <div class="cart-item-info">
+                            <div class="cart-item-name"><a href="#">Plecak Lowepro Tahoe BP 150 czarny</a></div>
+                            <div class="cart-avail"><span class="gd"></span> Wysyłamy w 24h</div>
+                        </div>
+                        <div class="cart-item-right">
+                            <a class="trash">&#128465;</a>
+                            <div class="cart-qty"><button>&#8722;</button><span>3</span><button>+</button></div>
+                            <div class="cart-item-price">837 zł</div>
+                            <div class="cart-item-unit">Za sztukę: 279 zł</div>
+                        </div>
+                    </div>
+                    <!-- Product 2 -->
+                    <div class="cart-item">
+                        <div class="cart-thumb">&#128247;</div>
+                        <div class="cart-item-info">
+                            <div class="cart-item-name"><a href="#">Pasek PEAKDESIGN Pasek na nadgarstek CUFF v3 czarny</a></div>
+                            <div class="cart-avail"><span class="gd"></span> Wysyłamy w 24h</div>
+                        </div>
+                        <div class="cart-item-right">
+                            <a class="trash">&#128465;</a>
+                            <div class="cart-qty"><button>&#8722;</button><span>1</span><button>+</button></div>
+                            <div class="cart-item-price">188 zł</div>
+                        </div>
+                    </div>
+                    <a class="cart-clear">&#128465; Wyczyść koszyk</a>
+
+                    <div class="also-bought">
+                        <h3>Klienci kupili również</h3>
+                        <div class="also-row">
+                            <div class="also-item"><div class="also-thumb">&#127909;</div></div>
+                            <div class="also-item"><div class="also-thumb">&#128248;</div></div>
+                            <div class="also-item"><div class="also-thumb">&#128190;</div></div>
+                            <div class="also-item"><div class="also-thumb">&#128187;</div></div>
+                            <div class="also-item"><div class="also-thumb">&#127911;</div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="cart-side">
+                    <div class="cs-card">
+                        <div class="cs-row"><span>Wartość zamówienia</span><span>1 025 zł</span></div>
+                        <div class="cs-total"><span class="cs-total-label">Do zapłaty</span><span class="cs-total-price">1 025 zł</span></div>
+                        <hr class="cs-div">
+                        <div class="cs-row"><span>Odbiór w salonie</span><span>od 0 zł</span></div>
+                        <div class="cs-row"><span>Dostawa</span><span>od 14 zł</span></div>
+                        <div class="free-del-hint">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                            Do darmowej dostawy brakuje 595 zł
+                        </div>
+                        <button class="cs-cta" onclick="goToCheckout()">Przejdź do kasy</button>
+                        <div class="coupon-row">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                            <input class="coupon-input" placeholder="Kod rabatowy *">
+                            <button class="coupon-btn">OK</button>
+                        </div>
+                        <div class="recaptcha-note">Ta strona korzysta z zabezpieczeń reCAPTCHA od Google <a href="#">Polityka prywatności</a> oraz <a href="#">Warunki korzystania z usług</a>.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- VIEW: CHECKOUT STEP 1 — Dane i dostawa                     -->
+    <!-- =========================================================== -->
+    <div class="view" id="view-step1">
+        <!-- Stepper -->
+        <div class="stepper">
+            <div class="step active">
+                <div class="step-circle">1</div>
+                <div class="step-label">Dane i dostawa</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-circle">2</div>
+                <div class="step-label">Płatność</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <div class="step-label">Gotowe</div>
+            </div>
+        </div>
+
+        <div class="ck-body">
+            <div class="ck-main">
+
+                <!-- SECTION: TWOJE DANE -->
+                <div class="sec-head" style="padding-top:0;">Twoje dane</div>
+                <div class="contact-grid">
+                    <div class="fg has-icon">
+                        <input type="email" class="fi ic" placeholder=" " id="inp-email">
+                        <span class="fi-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+                        <label class="fl">E-mail*</label>
+                    </div>
+                    <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel"><label class="fl">Telefon*</label></div>
+                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie"><label class="fl">Imię*</label></div>
+                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-nazwisko"><label class="fl">Nazwisko*</label></div>
+                </div>
+
+                <!-- FAKTURA -->
+                <hr class="section-sep" style="margin-top:20px;">
+                <div class="sec-head">Faktura</div>
+                <div class="fak-area">
+                    <div class="fak-info">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        Jeśli w tym kroku nie podasz NIP-u, nie otrzymasz faktury VAT na firmę.
+                    </div>
+                    <div class="cb-row">
+                        <input type="checkbox" id="fak-check" onchange="toggleFak()">
+                        <label class="cb-text" for="fak-check"><strong>Chcę fakturę</strong></label>
+                    </div>
+                    <div class="fak-form" id="fak-form">
+                        <div class="fak-type-toggle">
+                            <button type="button" class="fak-type-btn active" data-ft="firma" onclick="setFakType('firma')">Faktura na firmę</button>
+                            <button type="button" class="fak-type-btn" data-ft="osoba" onclick="setFakType('osoba')">Faktura na osobę prywatną</button>
+                        </div>
+                        <div class="fg">
+                            <select class="fi" id="fak-kraj" onchange="onKrajChange()">
+                                <option value="PL" selected>Polska</option>
+                                <option value="DE">Niemcy</option>
+                                <option value="CZ">Czechy</option>
+                                <option value="SK">Słowacja</option>
+                                <option value="LT">Litwa</option>
+                                <option value="FR">Francja</option>
+                                <option value="GB">Wielka Brytania</option>
+                                <option value="OTHER">Inny kraj...</option>
+                            </select>
+                            <label class="fl">Kraj</label>
+                        </div>
+                        <!-- FIRMA + PL -->
+                        <div class="fak-sub vis" id="fak-firma-pl">
+                            <div class="gus-row">
+                                <div class="fg" style="margin-bottom:0;"><input type="text" class="fi" placeholder=" " id="fak-nip-pl"><label class="fl">NIP*</label></div>
+                                <button type="button" class="gus-btn" onclick="fetchGUS()" id="gus-btn">Pobierz z GUS</button>
+                            </div>
+                            <div id="gus-result" style="display:none;"><div class="gus-result">
+                                <div class="gus-success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dane pobrane z GUS</div>
+                                <div class="fg"><input type="text" class="fi filled" value="Cyfrowe.pl Sp. z o.o." disabled placeholder=" "><label class="fl">Nazwa firmy</label></div>
+                                <div class="fr"><div class="fg"><input type="text" class="fi filled" value="Łostowicka" disabled placeholder=" "><label class="fl">Ulica</label></div><div class="fg sm"><input type="text" class="fi filled" value="25A" disabled placeholder=" "><label class="fl">Nr domu</label></div><div class="fg sm"><input type="text" class="fi filled" value="" disabled placeholder=" "><label class="fl">Nr mieszk.</label></div></div>
+                                <div class="fr"><div class="fg sm"><input type="text" class="fi filled" value="80-121" disabled placeholder=" "><label class="fl">Kod poczt.</label></div><div class="fg"><input type="text" class="fi filled" value="Gdańsk" disabled placeholder=" "><label class="fl">Miasto</label></div></div>
+                            </div></div>
+                        </div>
+                        <!-- FIRMA + ZAGRANICA -->
+                        <div class="fak-sub" id="fak-firma-foreign">
+                            <div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">VAT ID*</label></div>
+                            <div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Nazwa firmy*</label></div>
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr mieszk.</label></div></div>
+                            <div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Miasto*</label></div></div>
+                        </div>
+                        <!-- OSOBA PRYWATNA -->
+                        <div class="fak-sub" id="fak-osoba">
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-imie"><label class="fl">Imię*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-nazwisko"><label class="fl">Nazwisko*</label></div></div>
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr mieszk.</label></div></div>
+                            <div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Miasto*</label></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: METODA DOSTAWY -->
+                <hr class="section-sep">
+                <div class="sec-head">Metoda dostawy</div>
+
+                <div class="dc sel" data-m="paczkomat" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#E30613;color:#fff;padding:0 2px;border-radius:1px;">Paczkomaty 24/7</span></div><div class="dc-info"><span class="nm">InPost Paczkomat 24/7</span><span class="sub">1–2 dni robocze</span></div><span class="dc-price">14 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="pm-box"><div class="pm-label">Paczkomat</div><div class="pm-id">WAW31N</div><div class="pm-addr">Siedmiogrodzka 11<br>01-232 Warszawa</div><div class="pm-hint">Przy markecie Api</div></div><a class="ch-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Zmień</a></div></div></div>
+
+                <div class="dc" data-m="kurier-dpd" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon dpd" style="font-size:9px;"><b>dpd</b></div><div class="dc-info"><span class="nm">Kurier DPD</span><span class="sub">1 dzień roboczy</span></div><span class="dc-price">15 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+
+                <div class="dc" data-m="kurier-inpost" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost-k" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#1a1a1a;color:#fff;padding:0 2px;border-radius:1px;">Kurier</span></div><div class="dc-info"><span class="nm">Kurier InPost</span><span class="sub">1 dzień roboczy</span></div><span class="dc-price">17 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+
+                <div class="dc" data-m="kurier-pocztex" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon pocztex" style="font-size:8px;"><b>PP</b></div><div class="dc-info"><span class="nm">Kurier Pocztex</span><span class="sub">1 dzień roboczy</span></div><span class="dc-price">19 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+
+                <div class="dc salon" data-m="salon" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon salon-i">&#128722;</div><div class="dc-info"><span class="nm">Odbiór w salonie Cyfrowe.pl</span><span class="sub">Gdańsk, Katowice, Kraków, Łódź, Poznań, Warszawa</span><span class="sub">1 dzień roboczy</span></div><span class="dc-price">0 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#666;text-transform:uppercase;letter-spacing:.5px;">Wybierz salon odbioru</div><div class="salon-chips"><div class="s-chip" data-salon="gdansk" onclick="event.stopPropagation();selSalon(this)">Gdańsk</div><div class="s-chip" data-salon="katowice" onclick="event.stopPropagation();selSalon(this)">Katowice</div><div class="s-chip" data-salon="krakow" onclick="event.stopPropagation();selSalon(this)">Kraków</div><div class="s-chip" data-salon="lodz" onclick="event.stopPropagation();selSalon(this)">Łódź</div><div class="s-chip" data-salon="poznan" onclick="event.stopPropagation();selSalon(this)">Poznań</div><div class="s-chip" data-salon="warszawa" onclick="event.stopPropagation();selSalon(this)">Warszawa</div></div><div class="salon-detail" id="salon-detail"><div class="salon-selected-box"><div style="font-size:20px;flex-shrink:0;margin-top:2px;">&#128205;</div><div><div class="sa-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Wybrany salon odbioru</div><div class="sa-name" id="sa-name"></div><div class="sa-line" id="sa-line1"></div><div class="sa-line" id="sa-line2"></div><div class="sa-hours" id="sa-hours"></div></div></div></div></div></div></div>
+
+            </div>
+
+            <!-- SIDEBAR -->
+            <aside class="ck-side">
+                <div class="side-card">
+                    <div class="s-row"><span>Wartość zamówienia</span><span>1 025 zł</span></div>
+                    <div class="s-row"><span>Dostawa</span><span id="sd-del">14 zł</span></div>
+                    <hr class="s-div">
+                    <div class="s-total"><span class="s-total-label">Do zapłaty</span><span class="s-total-price" id="sd-total">1 039 zł</span></div>
+                    <div class="s-del-info vis" id="sd-info"><div class="sdi-m" id="sdi-method">InPost Paczkomat 24/7</div><div id="sdi-detail" style="margin-top:2px;">WAW31N &middot; Siedmiogrodzka 11, Warszawa</div></div>
+                    <button class="cta" id="cta-btn" onclick="goToStep2()">Przejdź do płatności</button>
+                </div>
+                <div class="order-sec">
+                    <div class="order-head" onclick="this.classList.toggle('cl');this.nextElementSibling.style.display=this.classList.contains('cl')?'none':'block'"><span>Twoje zamówienie</span><span class="chev">&#8963;</span></div>
+                    <div class="order-body"><div class="ord-prod"><div class="ord-thumb">&#128247;</div><div><div class="pn">Pasek PEAKDESIGN Pasek na nadgarstek CUFF v3 czarny</div><div class="av"><span class="gd"></span> Wysyłamy w 24h</div></div></div></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- VIEW: CHECKOUT STEP 2 — Płatność                           -->
+    <!-- =========================================================== -->
+    <div class="view" id="view-step2">
+        <!-- Stepper -->
+        <div class="stepper">
+            <div class="step done">
+                <div class="step-circle">&#10003;</div>
+                <div class="step-label">Dane i dostawa</div>
+            </div>
+            <div class="step-line done"></div>
+            <div class="step active">
+                <div class="step-circle">2</div>
+                <div class="step-label">Płatność</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <div class="step-label">Gotowe</div>
+            </div>
+        </div>
+
+        <div class="ck-body">
+            <div class="ck-main">
+
+                <a class="back-link" onclick="goBackToStep1()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Wróć do danych i dostawy</a>
+
+                <!-- SECTION: METODA PŁATNOŚCI -->
+                <div class="sec-head" style="padding-top:12px;">Metoda płatności</div>
+
+                <div class="pc" data-p="karta" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi visa">VISA</div><div class="pc-info"><span class="nm">Karta online</span></div></div></div>
+                <div class="pc" data-p="gpay" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi gpay">G</div><div class="pc-info"><span class="nm">Google Pay</span></div></div><div class="gpay-exp"><div class="gpay-hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Dane zostaną pobrane z konta Google</div></div></div>
+                <div class="pc" data-p="przelew" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi przelew">&#8644;</div><div class="pc-info"><span class="nm">Szybki przelew online</span></div></div></div>
+                <div class="pc" data-p="blik" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi blik">b</div><div class="pc-info"><span class="nm">BLIK</span></div></div></div>
+                <div class="pc" data-p="raty" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi raty">R</div><div class="pc-info"><span class="nm">Raty</span><br><span class="sub">Credit Agricole i Santander</span></div></div></div>
+                <div class="pc" data-p="pobranie" id="pobranie-pc" style="display:none;" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi pobr">&#8381;</div><div class="pc-info"><span class="nm">Za pobraniem</span><br><span class="sub">Płatne przy odbiorze</span></div></div></div>
+                <div class="pc" data-p="tradycyjny" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi trad">&#9993;</div><div class="pc-info"><span class="nm">Przelew tradycyjny</span><br><span class="sub">Posiadamy konto w Santanderze i mBanku</span></div></div></div>
+                <div class="gc" onclick="this.classList.toggle('checked')"><div class="gc-head"><div class="gc-chk"></div><div class="pi gift">&#127873;</div><div class="pc-info"><span class="nm">Karta podarunkowa</span></div></div></div>
+
+                <!-- SECTION: ZGODY -->
+                <hr class="section-sep" style="margin-top:24px;">
+                <div class="sec-head">Zgody</div>
+                <div class="consent-area">
+                    <div class="cb-row"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all">Zaznacz wszystkie</label></div>
+                    <div class="consent-desc">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
+                    <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">E-mail</label></div>
+                    <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">Połączeń telefonicznych</label></div>
+                    <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">WhatsApp/Messenger/SMS</label></div>
+                    <div style="margin-top:16px;">
+                        <div class="cb-row"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div>
+                    </div>
+                </div>
+
+                <!-- SECTION: UWAGI -->
+                <hr class="section-sep" style="margin-top:16px;">
+                <div class="sec-head">Uwagi do zamówienia</div>
+                <div class="uwagi-section">
+                    <a class="uwagi-toggle" id="uwagi-tog" onclick="toggleUwagi()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Dodaj
+                    </a>
+                    <div class="uwagi-panel" id="uwagi-panel">
+                        <div class="uwagi-panel-inner">
+                            <div class="fg"><textarea class="fi" style="min-height:60px;resize:vertical;padding-top:12px;" placeholder="np. proszę o dokładne zapakowanie..."></textarea></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDEBAR -->
+            <aside class="ck-side">
+                <div class="side-card">
+                    <div class="s-row"><span>Wartość zamówienia</span><span>1 025 zł</span></div>
+                    <div class="s-row"><span>Dostawa</span><span id="sd-del2">14 zł</span></div>
+                    <hr class="s-div">
+                    <div class="s-total"><span class="s-total-label">Do zapłaty</span><span class="s-total-price" id="sd-total2">1 039 zł</span></div>
+                    <div class="s-del-info vis" id="sd-info2"><div class="sdi-m" id="sdi-method2">InPost Paczkomat 24/7</div><div id="sdi-detail2" style="margin-top:2px;">WAW31N &middot; Siedmiogrodzka 11, Warszawa</div></div>
+                    <button class="cta" onclick="submitOrder()">Kupuję i płacę</button>
+                </div>
+                <div class="order-sec">
+                    <div class="order-head" onclick="this.classList.toggle('cl');this.nextElementSibling.style.display=this.classList.contains('cl')?'none':'block'"><span>Twoje zamówienie</span><span class="chev">&#8963;</span></div>
+                    <div class="order-body"><div class="ord-prod"><div class="ord-thumb">&#128247;</div><div><div class="pn">Pasek PEAKDESIGN Pasek na nadgarstek CUFF v3 czarny</div><div class="av"><span class="gd"></span> Wysyłamy w 24h</div></div></div></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRMATION -->
+<div class="conf-overlay" id="conf"><div class="conf-box"><h1>Pstryk i zamówienie złożone!</h1><div class="cnr">Nr: <a href="#">1274149</a></div><div class="cs">&#10003; Płatność przyjęta</div><div style="font-size:13px;margin-top:16px;"><a href="#">Szczegóły zamówienia &#8250;</a></div><button class="conf-close" onclick="document.getElementById('conf').classList.remove('vis')">Zamknij</button></div></div>
+
+<script>
+let selDelivery = 'paczkomat', selPayment = null, fakType = 'firma';
+const basePrice = 1025;
+const delData = {
+    'paczkomat':{name:'InPost Paczkomat 24/7',price:14,type:'paczkomat',detail:'WAW31N \u00b7 Siedmiogrodzka 11, Warszawa'},
+    'kurier-dpd':{name:'Kurier DPD',price:15,type:'kurier',detail:'1 dzień roboczy'},
+    'kurier-inpost':{name:'Kurier InPost',price:17,type:'kurier',detail:'1 dzień roboczy'},
+    'kurier-pocztex':{name:'Kurier Pocztex',price:19,type:'kurier',detail:'1 dzień roboczy'},
+    'salon':{name:'Odbiór w salonie Cyfrowe.pl',price:0,type:'salon',detail:''}
+};
+const salons = {
+    gdansk:{name:'Salon Gdańsk',l1:'ul. Łostowicka 25A',l2:'80-121 Gdańsk',h:'pon\u2013pt 10:00\u201319:00 | sob 10:00\u201315:00'},
+    katowice:{name:'Salon Katowice',l1:'ul. Chorzowska 107',l2:'40-101 Katowice',h:'pon\u2013pt 10:00\u201319:00 | sob 10:00\u201315:00'},
+    krakow:{name:'Salon Kraków',l1:'ul. Pawia 5 (Galeria Krakowska)',l2:'31-154 Kraków',h:'pon\u2013sob 10:00\u201321:00 | ndz 10:00\u201320:00'},
+    lodz:{name:'Salon Łódź',l1:'ul. Piłsudskiego 15/23 (Manufaktura)',l2:'90-307 Łódź',h:'pon\u2013sob 10:00\u201321:00 | ndz 10:00\u201320:00'},
+    poznan:{name:'Salon Poznań',l1:'ul. Półwiejska 42',l2:'61-888 Poznań',h:'pon\u2013pt 10:00\u201319:00 | sob 10:00\u201315:00'},
+    warszawa:{name:'Salon Warszawa',l1:'ul. Marszałkowska 27/35',l2:'00-639 Warszawa',h:'pon\u2013pt 10:00\u201319:00 | sob 10:00\u201315:00'}
+};
+
+function switchView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// CART -> STEP 1
+function goToCheckout() { switchView('view-step1'); }
+
+// STEP 1 -> STEP 2
+function goToStep2() {
+    const d = delData[selDelivery];
+    document.getElementById('pobranie-pc').style.display = d.type==='kurier' ? 'block' : 'none';
+    if(d.type!=='kurier' && selPayment==='pobranie') { selPayment=null; document.querySelectorAll('.pc').forEach(c=>c.classList.remove('sel')); }
+    syncStep2Sidebar();
+    switchView('view-step2');
+}
+
+// STEP 2 -> STEP 1
+function goBackToStep1() { switchView('view-step1'); }
+
+// DELIVERY
+function selDel(card) {
+    if(card.classList.contains('sel')) return;
+    document.querySelectorAll('.dc').forEach(c => c.classList.remove('sel'));
+    card.classList.add('sel');
+    selDelivery = card.dataset.m;
+    if(delData[selDelivery].type==='kurier') setTimeout(()=>{const f=card.querySelector('.cour-form .fi');if(f)f.focus();},380);
+    updateSidebar();
+}
+function selSalon(chip) {
+    document.querySelectorAll('.s-chip').forEach(c => c.classList.remove('sel'));
+    chip.classList.add('sel');
+    const s = salons[chip.dataset.salon];
+    document.getElementById('sa-name').textContent = s.name;
+    document.getElementById('sa-line1').textContent = s.l1;
+    document.getElementById('sa-line2').textContent = s.l2;
+    document.getElementById('sa-hours').innerHTML = s.h;
+    document.getElementById('salon-detail').classList.add('vis');
+    delData['salon'].detail = s.name.replace('Salon ','');
+    updateSidebar();
+}
+
+// PAYMENT
+function selPay(card) {
+    document.querySelectorAll('.pc').forEach(c => c.classList.remove('sel'));
+    card.classList.add('sel');
+    selPayment = card.dataset.p;
+}
+
+// FAKTURA
+function toggleFak() { document.getElementById('fak-form').classList.toggle('vis', document.getElementById('fak-check').checked); if(fakType==='osoba') syncOsobaName(); }
+function setFakType(t) { fakType=t; document.querySelectorAll('.fak-type-btn').forEach(b=>b.classList.toggle('active',b.dataset.ft===t)); updateFakView(); if(t==='osoba') syncOsobaName(); }
+function onKrajChange() { updateFakView(); }
+function updateFakView() {
+    const k = document.getElementById('fak-kraj').value, isPL = k==='PL';
+    document.querySelectorAll('.fak-sub').forEach(s => s.classList.remove('vis'));
+    if(fakType==='firma') { (isPL ? document.getElementById('fak-firma-pl') : document.getElementById('fak-firma-foreign')).classList.add('vis'); }
+    else { document.getElementById('fak-osoba').classList.add('vis'); }
+}
+function syncOsobaName() {
+    const i=document.getElementById('inp-imie').value, n=document.getElementById('inp-nazwisko').value;
+    const fi=document.getElementById('fak-os-imie'), fn=document.getElementById('fak-os-nazwisko');
+    if(i){fi.value=i;fi.classList.add('filled');}if(n){fn.value=n;fn.classList.add('filled');}
+}
+function fetchGUS() {
+    if(!document.getElementById('fak-nip-pl').value.trim()){document.getElementById('fak-nip-pl').focus();return;}
+    document.getElementById('gus-result').style.display='block';
+    const b=document.getElementById('gus-btn');b.textContent='\u2713 Pobrano';b.style.background='#2E7D32';
+}
+document.getElementById('inp-imie')?.addEventListener('input', ()=>{if(fakType==='osoba')syncOsobaName();});
+document.getElementById('inp-nazwisko')?.addEventListener('input', ()=>{if(fakType==='osoba')syncOsobaName();});
+
+// SIDEBAR
+function updateSidebar() {
+    const d = delData[selDelivery], c = d.price, t = basePrice + c;
+    document.getElementById('sd-del').textContent = c===0 ? '0 zł' : c+' zł';
+    const el = document.getElementById('sd-total');
+    el.textContent = t.toLocaleString('pl-PL') + ' zł';
+    el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),300);
+    document.getElementById('sdi-method').textContent = d.name;
+    document.getElementById('sdi-detail').textContent = d.detail;
+    document.getElementById('sd-info').classList.add('vis');
+}
+function syncStep2Sidebar() {
+    const d = delData[selDelivery], c = d.price, t = basePrice + c;
+    document.getElementById('sd-del2').textContent = c===0 ? '0 zł' : c+' zł';
+    document.getElementById('sd-total2').textContent = t.toLocaleString('pl-PL') + ' zł';
+    document.getElementById('sdi-method2').textContent = d.name;
+    document.getElementById('sdi-detail2').textContent = d.detail;
+    document.getElementById('sd-info2').classList.add('vis');
+}
+
+// CONSENTS
+function toggleAll(cb) {
+    const checked = cb.checked;
+    document.querySelectorAll('.mkt-cb').forEach(c => c.checked = checked);
+    document.getElementById('c-req').checked = checked;
+}
+
+// UWAGI
+function toggleUwagi() {
+    document.getElementById('uwagi-panel').classList.toggle('vis');
+}
+
+function submitOrder() { document.getElementById('conf').classList.add('vis'); }
+updateSidebar();
+</script>
+</body>
+</html>
