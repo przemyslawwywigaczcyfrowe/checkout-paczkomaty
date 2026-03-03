@@ -113,9 +113,7 @@
         .fg.has-icon.valid::after, .fg.has-icon.error::after { right: 12px; }
         .val-msg { display: none; font-size: 11px; color: #E30613; padding: 3px 0 0 4px; line-height: 1.3; }
         .fg.error .val-msg { display: block; }
-        .fg.shake .fi { animation: valShake .35s ease; }
         @keyframes valPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes valShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 40% { transform: translateX(3px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(2px); } }
         /* Login prompt */
         .login-prompt { display: none; margin-top: -2px; padding: 12px 14px; background: #F5F5F5; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 4px 4px; animation: fadeUp .25s ease; }
         .login-prompt.vis { display: block; }
@@ -738,8 +736,6 @@ function validateField(inp){
     // Don't validate empty untouched fields
     if(!val&&!fg.classList.contains('touched'))return true;
     fg.classList.add('touched');
-    // Remove previous animation
-    fg.classList.remove('shake');
     if(rule.test(val)){
         fg.classList.remove('error');
         fg.classList.add('valid');
@@ -749,10 +745,6 @@ function validateField(inp){
     } else {
         fg.classList.remove('valid');
         fg.classList.add('error');
-        // Trigger shake
-        void fg.offsetWidth; // force reflow for re-animation
-        fg.classList.add('shake');
-        setTimeout(()=>fg.classList.remove('shake'),400);
         const msg=fg.querySelector('.val-msg');
         if(msg)msg.textContent=rule.msg;
         return false;
@@ -764,14 +756,12 @@ function validateCourierField(inp){
     const fg=inp.closest('.fg');
     if(!fg)return true;
     fg.classList.add('touched');
-    fg.classList.remove('shake');
     let msg=fg.querySelector('.val-msg');
     if(!msg){msg=document.createElement('span');msg.className='val-msg';fg.appendChild(msg);}
     if(inp.value.trim()){
         fg.classList.remove('error');fg.classList.add('valid');msg.textContent='';return true;
     } else {
         fg.classList.remove('valid');fg.classList.add('error');
-        void fg.offsetWidth;fg.classList.add('shake');setTimeout(()=>fg.classList.remove('shake'),400);
         msg.textContent='To pole jest wymagane';return false;
     }
 }
