@@ -28,7 +28,6 @@
 
         .sec-head { font-size: 18px; font-weight: 700; padding: 24px 0 16px; }
         .sec-head:first-child { padding-top: 0; }
-        .section-sep { border: 0; border-top: 1px solid #e8e8e8; margin: 8px 0 0; }
 
         /* ===== FORM FIELDS ===== */
         .fg { position: relative; margin-bottom: 12px; }
@@ -316,7 +315,7 @@
                 </div>
 
                 <!-- METODA DOSTAWY -->
-                <hr class="section-sep">
+
                 <div class="sec-head">Metoda dostawy</div>
 
                 <div class="dc" data-m="paczkomat" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#E30613;color:#fff;padding:0 2px;border-radius:1px;">Paczkomaty 24/7</span></div><div class="dc-info"><span class="nm">InPost Paczkomat 24/7</span><span class="sub">1–2 dni robocze</span></div><span class="dc-price">14 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
@@ -349,7 +348,7 @@
                 </div></div></div>
 
                 <!-- METODA PLATNOSCI -->
-                <hr class="section-sep">
+
                 <div class="sec-head">Metoda płatności</div>
                 <div class="pc" data-p="karta" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi visa">VISA</div><div class="pc-info"><span class="nm">Karta online</span></div></div></div>
                 <div class="pc" data-p="gpay" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi gpay">G</div><div class="pc-info"><span class="nm">Google Pay</span></div></div><div class="gpay-exp"><div class="gpay-hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Dane zostaną pobrane z konta Google</div></div></div>
@@ -361,7 +360,7 @@
                 <div class="gc" onclick="this.classList.toggle('checked')"><div class="gc-head"><div class="gc-chk"></div><div class="pi gift">&#127873;</div><div class="pc-info"><span class="nm">Karta podarunkowa</span></div></div></div>
 
                 <!-- ZGODY -->
-                <hr class="section-sep">
+
                 <div class="sec-head">Zgody</div>
                 <div class="consent-area">
                     <div class="cb-row"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all">Zaznacz wszystkie</label></div>
@@ -373,7 +372,7 @@
                 </div>
 
                 <!-- UWAGI -->
-                <hr class="section-sep">
+
                 <div class="sec-head">Uwagi do zamówienia</div>
                 <div><a class="uwagi-toggle" onclick="document.getElementById('uwagi-panel').classList.toggle('vis')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Dodaj</a><div class="uwagi-panel" id="uwagi-panel"><div class="uwagi-panel-inner"><div class="fg"><textarea class="fi" style="min-height:60px;resize:vertical;padding-top:12px;" placeholder="np. proszę o dokładne zapakowanie..."></textarea></div></div></div></div>
 
