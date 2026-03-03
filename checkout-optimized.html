@@ -104,6 +104,18 @@
         .fi.ic:focus ~ .fl, .fi.ic:not(:placeholder-shown) ~ .fl, .fi.ic.filled ~ .fl { left: 12px; top: 0; font-size: 10px; color: #666; transform: translateY(-50%); }
         .fi.filled + .fl, .fi:disabled + .fl { top: 0; font-size: 10px; color: #666; }
         .fi:disabled { background: #f9f9f9; color: #444; }
+        /* ===== INLINE VALIDATION ===== */
+        .fg.valid .fi { border-color: #2E7D32; }
+        .fg.error .fi { border-color: #E30613; }
+        .fg.valid::after, .fg.error::after { position: absolute; right: 12px; top: 13px; pointer-events: none; font-size: 14px; z-index: 2; animation: valPop .25s ease; }
+        .fg.valid::after { content: '✓'; color: #2E7D32; font-weight: 700; }
+        .fg.error::after { content: '✕'; color: #E30613; font-weight: 700; }
+        .fg.has-icon.valid::after, .fg.has-icon.error::after { right: 12px; }
+        .val-msg { display: none; font-size: 11px; color: #E30613; padding: 3px 0 0 4px; line-height: 1.3; }
+        .fg.error .val-msg { display: block; }
+        .fg.shake .fi { animation: valShake .35s ease; }
+        @keyframes valPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes valShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 40% { transform: translateX(3px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(2px); } }
         /* Login prompt */
         .login-prompt { display: none; margin-top: -2px; padding: 12px 14px; background: #F5F5F5; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 4px 4px; animation: fadeUp .25s ease; }
         .login-prompt.vis { display: block; }
@@ -348,10 +360,10 @@
             <div class="ck-main">
                 <div class="sec-head" style="padding-top:0;">Moje dane</div>
                 <div class="contact-grid">
-                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie"><label class="fl">Imię*</label></div>
-                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-nazwisko"><label class="fl">Nazwisko*</label></div>
-                    <div class="fg has-icon"><input type="email" class="fi ic" placeholder=" " id="inp-email" oninput="checkEmail(this)"><span class="fi-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><label class="fl">E-mail*</label></div>
-                    <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel"><label class="fl">Telefon*</label></div>
+                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie"><label class="fl">Imię*</label><span class="val-msg"></span></div>
+                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-nazwisko"><label class="fl">Nazwisko*</label><span class="val-msg"></span></div>
+                    <div class="fg has-icon"><input type="email" class="fi ic" placeholder=" " id="inp-email" oninput="checkEmail(this)"><span class="fi-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><label class="fl">E-mail*</label><span class="val-msg"></span></div>
+                    <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel"><label class="fl">Telefon*</label><span class="val-msg"></span></div>
                 </div>
                 <div class="login-prompt" id="login-prompt">
                     <div class="lp-text">Masz już konto jako <strong id="lp-email"></strong>. Zaloguj się, aby przyspieszyć zakupy.</div>
@@ -545,6 +557,7 @@ const delData={
 function switchView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
 function goToCheckout(){switchView('view-step1');}
 function goToStep2(){
+    if(!validateStep1()) return;
     if(selDelivery){
         const d=delData[selDelivery];
         document.getElementById('pobranie-pc').style.display=d.type==='kurier'?'block':'none';
@@ -707,6 +720,119 @@ function selectPaczkomat(id,addr,hint){
 
 // Initial sidebar — only update if delivery is selected
 if(selDelivery) updateSidebar();
+
+// ===== INLINE VALIDATION =====
+const valRules={
+    'inp-imie':    {test:v=>v.trim().length>=2, msg:'Podaj imię (min. 2 znaki)'},
+    'inp-nazwisko':{test:v=>v.trim().length>=2, msg:'Podaj nazwisko (min. 2 znaki)'},
+    'inp-email':   {test:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()), msg:'Podaj poprawny adres e-mail'},
+    'inp-tel':     {test:v=>{const d=v.replace(/\D/g,'');return d.length===9||(d.length===11&&d.startsWith('48'));}, msg:'Podaj 9-cyfrowy numer telefonu'}
+};
+
+function validateField(inp){
+    const fg=inp.closest('.fg');
+    if(!fg)return true;
+    const rule=valRules[inp.id];
+    if(!rule)return true;
+    const val=inp.value;
+    // Don't validate empty untouched fields
+    if(!val&&!fg.classList.contains('touched'))return true;
+    fg.classList.add('touched');
+    // Remove previous animation
+    fg.classList.remove('shake');
+    if(rule.test(val)){
+        fg.classList.remove('error');
+        fg.classList.add('valid');
+        const msg=fg.querySelector('.val-msg');
+        if(msg)msg.textContent='';
+        return true;
+    } else {
+        fg.classList.remove('valid');
+        fg.classList.add('error');
+        // Trigger shake
+        void fg.offsetWidth; // force reflow for re-animation
+        fg.classList.add('shake');
+        setTimeout(()=>fg.classList.remove('shake'),400);
+        const msg=fg.querySelector('.val-msg');
+        if(msg)msg.textContent=rule.msg;
+        return false;
+    }
+}
+
+// Courier address validation helper
+function validateCourierField(inp){
+    const fg=inp.closest('.fg');
+    if(!fg)return true;
+    fg.classList.add('touched');
+    fg.classList.remove('shake');
+    let msg=fg.querySelector('.val-msg');
+    if(!msg){msg=document.createElement('span');msg.className='val-msg';fg.appendChild(msg);}
+    if(inp.value.trim()){
+        fg.classList.remove('error');fg.classList.add('valid');msg.textContent='';return true;
+    } else {
+        fg.classList.remove('valid');fg.classList.add('error');
+        void fg.offsetWidth;fg.classList.add('shake');setTimeout(()=>fg.classList.remove('shake'),400);
+        msg.textContent='To pole jest wymagane';return false;
+    }
+}
+
+// Attach blur + live re-validation handlers
+document.querySelectorAll('#inp-imie,#inp-nazwisko,#inp-email,#inp-tel').forEach(inp=>{
+    inp.addEventListener('blur',()=>validateField(inp));
+    inp.addEventListener('input',()=>{
+        if(inp.closest('.fg').classList.contains('touched'))validateField(inp);
+    });
+});
+
+function validateStep1(){
+    let ok=true;
+    // Validate contact fields
+    ['inp-imie','inp-nazwisko','inp-email','inp-tel'].forEach(id=>{
+        const inp=document.getElementById(id);
+        inp.closest('.fg').classList.add('touched');
+        if(!validateField(inp))ok=false;
+    });
+    // Validate delivery selected
+    if(!selDelivery){
+        ok=false;
+        // Flash delivery section
+        const dh=document.querySelector('#view-step1 .sec-head:last-of-type');
+        if(!dh){const allH=document.querySelectorAll('#view-step1 .sec-head');if(allH.length>1)allH[1].scrollIntoView({behavior:'smooth',block:'center'});}
+    }
+    // If courier, validate address fields
+    if(selDelivery&&delData[selDelivery].type==='kurier'){
+        const card=document.querySelector('.dc.sel');
+        if(card){
+            card.querySelectorAll('.cour-ulica,.cour-nrdomu,.cour-kod,.cour-miasto').forEach(inp=>{
+                if(!validateCourierField(inp))ok=false;
+            });
+            // Attach live re-validation to courier fields if not done yet
+            card.querySelectorAll('.cour-ulica,.cour-nrdomu,.cour-kod,.cour-miasto').forEach(inp=>{
+                if(!inp.dataset.valBound){
+                    inp.dataset.valBound='1';
+                    inp.addEventListener('blur',()=>validateCourierField(inp));
+                    inp.addEventListener('input',()=>{if(inp.closest('.fg').classList.contains('touched'))validateCourierField(inp);});
+                }
+            });
+        }
+    }
+    // If paczkomat, check that a paczkomat was selected
+    if(selDelivery==='paczkomat'&&!document.getElementById('pm-selected').classList.contains('vis')){
+        ok=false;
+        document.getElementById('pm-map').scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    // If salon, check that a salon was selected
+    if(selDelivery==='salon'&&!document.querySelector('.salon-radio.sel')){
+        ok=false;
+        document.getElementById('salon-list').scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    // Scroll to first error
+    if(!ok){
+        const firstErr=document.querySelector('#view-step1 .fg.error .fi');
+        if(firstErr)firstErr.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    return ok;
+}
 </script>
 </body>
 </html>
