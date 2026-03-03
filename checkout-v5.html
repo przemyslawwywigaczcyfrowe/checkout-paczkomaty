@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyfrowe.pl – Checkout V5 (One Page Optimized)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #1a1a1a; background: #f5f5f5; line-height: 1.5; }
+        body { font-family: 'Lato', system-ui, sans-serif; font-size: 14px; color: #1a1a1a; background: #f5f5f5; line-height: 1.5; }
         a { color: #1a1a1a; cursor: pointer; }
         button { cursor: pointer; font-family: inherit; }
 
@@ -26,8 +27,8 @@
         .ck-side { width: 310px; flex-shrink: 0; position: sticky; top: 20px; }
         .ck-title { font-size: 22px; font-weight: 700; padding: 24px 32px 0; }
 
-        .sec-head { font-size: 18px; font-weight: 700; padding: 24px 0 16px; }
-        .sec-head:first-child { padding-top: 0; }
+        .sec-head { font-size: 18px; font-weight: 700; padding: 24px 0 16px; border-top: 4px solid #eee; margin-top: 24px; padding-top: 24px; }
+        .sec-head:first-child { padding-top: 0; margin-top: 0; border-top: none; }
 
         /* ===== FORM FIELDS ===== */
         .fg { position: relative; margin-bottom: 12px; }
@@ -47,12 +48,12 @@
         .fi:disabled { background: #f9f9f9; color: #444; }
         /* ===== INLINE VALIDATION ===== */
         .fg.valid .fi { border-color: #2E7D32; }
-        .fg.error .fi { border-color: #E30613; }
+        .fg.error .fi { border-color: #DD0031; }
         .fg.valid::after, .fg.error::after { position: absolute; right: 12px; top: 13px; pointer-events: none; font-size: 14px; z-index: 2; animation: valPop .25s ease; }
         .fg.valid::after { content: '\2713'; color: #2E7D32; font-weight: 700; }
-        .fg.error::after { content: '\2715'; color: #E30613; font-weight: 700; }
+        .fg.error::after { content: '\2715'; color: #DD0031; font-weight: 700; }
         .fg.has-icon.valid::after, .fg.has-icon.error::after { right: 12px; }
-        .val-msg { display: none; font-size: 11px; color: #E30613; padding: 3px 0 0 4px; line-height: 1.3; }
+        .val-msg { display: none; font-size: 11px; color: #DD0031; padding: 3px 0 0 4px; line-height: 1.3; }
         .fg.error .val-msg { display: block; }
         @keyframes valPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         /* Login prompt */
@@ -71,24 +72,24 @@
         .contact-grid .fg { margin-bottom: 0; }
 
         /* ===== FAKTURA ===== */
-        .fak-form { display: none; margin-top: 12px; padding: 16px; background: #fafafa; border: 1px solid #eee; border-radius: 6px; }
+        .fak-form { display: none; margin-top: 12px; padding: 16px; background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
         .fak-form.vis { display: block; }
-        .fak-type-toggle { display: flex; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
+        .fak-type-toggle { display: flex; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
         .fak-type-btn { flex: 1; padding: 9px 12px; border: none; background: #fff; font-size: 12px; font-weight: 500; color: #666; cursor: pointer; transition: all .15s; text-align: center; }
         .fak-type-btn:first-child { border-right: 1px solid #e0e0e0; }
         .fak-type-btn.active { background: #1a1a1a; color: #fff; font-weight: 600; }
         .fak-type-btn:hover:not(.active) { background: #f5f5f5; }
         .gus-row { display: flex; gap: 10px; align-items: flex-start; }
         .gus-row .fg { flex: 1; }
-        .gus-btn { padding: 11px 18px; background: #E30613; color: #fff; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background .15s; flex-shrink: 0; }
-        .gus-btn:hover { background: #c70511; }
+        .gus-btn { padding: 11px 18px; background: #DD0031; color: #fff; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+        .gus-btn:hover { background: #B8002A; }
         .gus-result { margin-top: 4px; animation: fadeUp .25s ease; }
         .gus-success { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #2E7D32; font-weight: 600; margin-bottom: 10px; }
         .fak-sub { display: none; }
         .fak-sub.vis { display: block; }
 
         /* ===== DELIVERY CARDS ===== */
-        .dc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 6px; transition: border-color .15s; cursor: pointer; overflow: hidden; }
+        .dc { border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 6px; transition: border-color .15s; cursor: pointer; overflow: hidden; }
         .dc:hover { border-color: #bbb; }
         .dc.sel { border-color: #1a1a1a; border-width: 2px; cursor: default; }
         .dc-head { display: flex; align-items: center; padding: 12px 14px; gap: 12px; }
@@ -108,7 +109,7 @@
         .dc.sel .dc-exp { max-height: 800px; }
         .dc-exp-inner { padding: 0 14px 14px; border-top: 1px solid #eee; }
         .dc.sel .dc-exp-inner { padding-top: 14px; }
-        .pm-box { background: #f9f9f9; border-radius: 6px; padding: 12px 14px; }
+        .pm-box { background: #f9f9f9; border-radius: 4px; padding: 12px 14px; }
         .pm-box .pm-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
         .pm-box .pm-id { font-weight: 700; font-size: 15px; margin-top: 2px; }
         .pm-box .pm-addr { font-size: 13px; color: #444; margin-top: 2px; }
@@ -116,7 +117,7 @@
         .ch-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #1a1a1a; text-decoration: underline; margin-top: 8px; cursor: pointer; }
         .ch-link svg { width: 12px; height: 12px; }
         /* Paczkomat map placeholder */
-        .pm-map { width: 100%; height: 280px; background: #f0f0f0; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border: 2px dashed #ccc; transition: all .15s; position: relative; overflow: hidden; }
+        .pm-map { width: 100%; height: 280px; background: #f0f0f0; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border: 2px dashed #ccc; transition: all .15s; position: relative; overflow: hidden; }
         .pm-map:hover { border-color: #999; background: #e8e8e8; }
         .pm-map .pm-map-icon { font-size: 32px; }
         .pm-map .pm-map-text { font-size: 13px; color: #666; font-weight: 500; }
@@ -146,7 +147,7 @@
         .salon-radio.sel .sr-check { opacity: 1; }
 
         /* ===== PAYMENT ===== */
-        .pc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 5px; cursor: pointer; transition: border-color .15s; overflow: hidden; }
+        .pc { border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 5px; cursor: pointer; transition: border-color .15s; overflow: hidden; }
         .pc:hover { border-color: #bbb; }
         .pc.sel { border-color: #1a1a1a; border-width: 2px; }
         .pc-head { display: flex; align-items: center; padding: 10px 14px; gap: 12px; }
@@ -157,28 +158,28 @@
         .pi { width: 34px; height: 22px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; flex-shrink: 0; color: #fff; }
         .pi.visa { background: linear-gradient(135deg,#1A1F71,#2B3990); } .pi.gpay { background: #fff; border: 1px solid #ddd; color: #4285F4; font-size: 12px; }
         .pi.przelew { background: #2E7D32; font-size: 14px; } .pi.blik { background: #1a1a1a; font-size: 11px; font-weight: 900; }
-        .pi.raty { background: #E30613; } .pi.pobr { background: #555; font-size: 11px; }
+        .pi.raty { background: #DD0031; } .pi.pobr { background: #555; font-size: 11px; }
         .pi.trad { background: #444; font-size: 12px; } .pi.gift { background: #7B1FA2; font-size: 11px; }
         .pc-info .nm { font-size: 13px; font-weight: 500; } .pc-info .sub { font-size: 11px; color: #888; }
         .gpay-exp { max-height: 0; overflow: hidden; transition: max-height .25s; }
         .pc.sel .gpay-exp { max-height: 50px; }
         .gpay-hint { padding: 8px 14px; border-top: 1px solid #eee; font-size: 11px; color: #4CAF50; display: flex; align-items: center; gap: 6px; }
-        .gc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 5px; cursor: pointer; }
+        .gc { border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 5px; cursor: pointer; }
         .gc-head { display: flex; align-items: center; padding: 10px 14px; gap: 12px; }
         .gc-chk { width: 16px; height: 16px; border: 2px solid #ccc; border-radius: 3px; flex-shrink: 0; }
 
         /* ===== CONSENTS ===== */
         .consent-area { padding-top: 0; }
         .cb-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer; }
-        .cb-row input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; accent-color: #1a1a1a; }
+        .cb-row input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: #1a1a1a; }
         .cb-text { font-size: 13px; color: #444; line-height: 1.5; }
         .cb-text a { color: #1a1a1a; text-decoration: underline; }
         .cb-text strong { font-weight: 600; }
         .consent-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
-        /* Consent channels inline */
-        .mkt-channels { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 14px; }
-        .mkt-channels label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; cursor: pointer; }
-        .mkt-channels input[type="checkbox"] { width: 14px; height: 14px; accent-color: #1a1a1a; }
+        /* Consent channels */
+        .mkt-channels { display: flex; flex-direction: column; gap: 0; margin-bottom: 14px; }
+        .mkt-channels label { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #1a1a1a; cursor: pointer; padding: 8px 0; }
+        .mkt-channels input[type="checkbox"] { width: 18px; height: 18px; accent-color: #1a1a1a; flex-shrink: 0; }
         .uwagi-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1a1a1a; text-decoration: underline; cursor: pointer; margin-top: 4px; }
         .uwagi-toggle svg { width: 12px; height: 12px; }
         .uwagi-panel { max-height: 0; overflow: hidden; transition: max-height .3s; }
@@ -186,19 +187,19 @@
         .uwagi-panel-inner { padding-top: 12px; }
 
         /* ===== SIDEBAR ===== */
-        .side-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 12px; background: #fafafa; }
+        .side-card { border: none; border-radius: 0; padding: 20px; margin-bottom: 12px; background: #F2F2F2; }
         .s-row { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 4px; }
         .s-div { border: 0; border-top: 1px solid #eee; margin: 12px 0; }
         .s-total { display: flex; justify-content: space-between; align-items: baseline; }
         .s-total-label { font-size: 16px; font-weight: 700; }
         .s-total-price { font-size: 22px; font-weight: 700; transition: color .15s; }
-        .s-total-price.flash { color: #E30613; }
-        .cta { width: 100%; padding: 14px; background: #E30613; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 700; transition: background .15s; margin-top: 16px; }
-        .cta:hover { background: #c70511; }
+        .s-total-price.flash { color: #DD0031; }
+        .cta { width: 100%; padding: 16px 30px; background: #DD0031; color: #fff; border: none; border-radius: 0; font-size: 18px; font-weight: 700; transition: background .15s; margin-top: 16px; height: 54px; display: flex; align-items: center; justify-content: center; }
+        .cta:hover { background: #B8002A; }
         .s-del-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 11px; color: #888; display: none; }
         .s-del-info.vis { display: block; }
         .s-del-info .sdi-m { font-weight: 600; color: #1a1a1a; font-size: 12px; }
-        .order-sec { border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
+        .order-sec { border: none; border-radius: 0; overflow: hidden; background: #F2F2F2; }
         .order-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 600; }
         .order-head .chev { font-size: 16px; color: #999; }
         .order-body { padding: 0 16px 14px; }
@@ -221,7 +222,7 @@
         .conf-hero .conf-nr a { color: #1a1a1a; font-weight: 600; }
         .conf-hero .conf-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #2E7D32; font-weight: 600; margin-top: 12px; background: #E8F5E9; padding: 6px 16px; border-radius: 20px; }
         .conf-body { max-width: 640px; margin: 0 auto; padding: 0 32px 64px; }
-        .conf-card { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+        .conf-card { border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
         .conf-card-head { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #888; padding: 14px 20px 10px; }
         .conf-card-body { padding: 0 20px 16px; }
         .conf-prod { display: flex; gap: 12px; align-items: center; padding: 8px 0; }
@@ -237,14 +238,14 @@
         .conf-detail-row .cdr-val { font-weight: 600; }
         .conf-total-row { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; padding: 16px 20px; border-top: 2px solid #1a1a1a; }
         .conf-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; }
-        .conf-btn { padding: 12px 28px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .15s; }
-        .conf-btn.primary { background: #E30613; color: #fff; border: none; }
-        .conf-btn.primary:hover { background: #c70511; }
+        .conf-btn { padding: 12px 28px; border-radius: 0; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .15s; }
+        .conf-btn.primary { background: #DD0031; color: #fff; border: none; }
+        .conf-btn.primary:hover { background: #B8002A; }
         .conf-btn.secondary { background: #fff; color: #1a1a1a; border: 1px solid #ddd; }
         .conf-btn.secondary:hover { border-color: #999; }
 
         /* ===== VALIDATION ALERT ===== */
-        .val-alert { display: none; padding: 12px 16px; background: #FFF3F3; border: 1px solid #E30613; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #E30613; animation: fadeUp .25s ease; }
+        .val-alert { display: none; padding: 12px 16px; background: #FFF3F3; border: 1px solid #DD0031; border-radius: 4px; margin-bottom: 16px; font-size: 13px; color: #DD0031; animation: fadeUp .25s ease; }
         .val-alert.vis { display: flex; align-items: center; gap: 8px; }
 
         @media (max-width: 800px) {
@@ -260,9 +261,9 @@
         /* Cross-sell */
         .xs-prod{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0}
         .xs-prod:last-child{border-bottom:none}
-        .xs-thumb{width:40px;height:40px;background:#f5f5f5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-        .xs-info{flex:1}.xs-name{font-size:12px;font-weight:500}.xs-price{font-size:13px;font-weight:700;color:#E30613}
-        .xs-btn{padding:6px 14px;background:#E30613;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;transition:background .15s}
+        .xs-thumb{width:40px;height:40px;background:#f5f5f5;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .xs-info{flex:1}.xs-name{font-size:12px;font-weight:500}.xs-price{font-size:13px;font-weight:700;color:#DD0031}
+        .xs-btn{padding:6px 14px;background:#DD0031;color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;transition:background .15s}
         @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
     </style>
 </head>
@@ -330,7 +331,7 @@
 
                 <div class="sec-head">Metoda dostawy</div>
 
-                <div class="dc" data-m="paczkomat" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#E30613;color:#fff;padding:0 2px;border-radius:1px;">Paczkomaty 24/7</span></div><div class="dc-info"><span class="nm">InPost Paczkomat 24/7</span><span class="sub">dostawa: <b style="color:#2E7D32">śr. 5 marca</b></span></div><span class="dc-price">14 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
+                <div class="dc" data-m="paczkomat" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#DD0031;color:#fff;padding:0 2px;border-radius:1px;">Paczkomaty 24/7</span></div><div class="dc-info"><span class="nm">InPost Paczkomat 24/7</span><span class="sub">dostawa: <b>śr. 5 marca</b></span></div><span class="dc-price">14 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
                     <div class="pm-map" id="pm-map" onclick="event.stopPropagation();openPaczkomatMap()">
                         <div class="pm-map-icon">&#128205;</div>
                         <div class="pm-map-text">Wybierz paczkomat na mapie</div>
@@ -342,13 +343,13 @@
                     </div>
                 </div></div></div>
 
-                <div class="dc" data-m="kurier-dpd" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon dpd" style="font-size:9px;"><b>dpd</b></div><div class="dc-info"><span class="nm">Kurier DPD</span><span class="sub">dostawa: <b style="color:#2E7D32">wt. 4 marca</b></span></div><span class="dc-price">15 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+                <div class="dc" data-m="kurier-dpd" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon dpd" style="font-size:9px;"><b>dpd</b></div><div class="dc-info"><span class="nm">Kurier DPD</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">15 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
 
-                <div class="dc" data-m="kurier-inpost" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost-k" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#1a1a1a;color:#fff;padding:0 2px;border-radius:1px;">Kurier</span></div><div class="dc-info"><span class="nm">Kurier InPost</span><span class="sub">dostawa: <b style="color:#2E7D32">wt. 4 marca</b></span></div><span class="dc-price">17 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+                <div class="dc" data-m="kurier-inpost" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost-k" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#1a1a1a;color:#fff;padding:0 2px;border-radius:1px;">Kurier</span></div><div class="dc-info"><span class="nm">Kurier InPost</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">17 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
 
-                <div class="dc" data-m="kurier-pocztex" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon pocztex" style="font-size:8px;"><b>PP</b></div><div class="dc-info"><span class="nm">Kurier Pocztex</span><span class="sub">dostawa: <b style="color:#2E7D32">wt. 4 marca</b></span></div><span class="dc-price">19 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+                <div class="dc" data-m="kurier-pocztex" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon pocztex" style="font-size:8px;"><b>PP</b></div><div class="dc-info"><span class="nm">Kurier Pocztex</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">19 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
 
-                <div class="dc salon" data-m="salon" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon salon-i">&#128722;</div><div class="dc-info"><span class="nm">Odbiór w salonie Cyfrowe.pl</span><span class="sub">Gdańsk, Katowice, Kraków, Łódź, Poznań, Warszawa</span><span class="sub">dostawa: <b style="color:#2E7D32">wt. 4 marca</b></span></div><span class="dc-price">0 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
+                <div class="dc salon" data-m="salon" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon salon-i">&#128722;</div><div class="dc-info"><span class="nm">Odbiór w salonie Cyfrowe.pl</span><span class="sub">Gdańsk, Katowice, Kraków, Łódź, Poznań, Warszawa</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">0 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
                     <div class="salon-list" id="salon-list">
                         <div class="salon-radio" data-salon="gdansk" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Gdańsk</div><div class="sr-detail"><div class="sr-addr">ul. Łostowicka 25A, 80-121 Gdańsk</div><div class="sr-hours">pon–pt 10:00–19:00 | sob 10:00–15:00</div></div></div><div class="sr-check">&#10003;</div></div>
                         <div class="salon-radio" data-salon="katowice" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Katowice</div><div class="sr-detail"><div class="sr-addr">ul. Chorzowska 107, 40-101 Katowice</div><div class="sr-hours">pon–pt 10:00–19:00 | sob 10:00–15:00</div></div></div><div class="sr-check">&#10003;</div></div>
@@ -393,7 +394,7 @@
 
                 <!-- MAIN CTA -->
                 <div class="main-cta-wrap">
-                    <div class="val-alert" id="val-alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E30613" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="val-alert-msg"></span></div>
+                    <div class="val-alert" id="val-alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DD0031" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="val-alert-msg"></span></div>
                     <button class="cta" onclick="submitOrder()">Kupuję i płacę</button>
                     <div class="trust-row">
                         <span class="trust-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> SSL</span>
