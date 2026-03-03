@@ -21,7 +21,7 @@
         .view.active { display: block; }
 
         /* ===== STEPPER ===== */
-        .stepper { display: flex; justify-content: center; align-items: flex-start; padding: 28px 0 24px; gap: 0; }
+        .stepper { display: flex; justify-content: center; align-items: flex-start; padding: 28px 20% 24px; gap: 0; }
         .step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; min-width: 100px; }
         .step-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; border: 2px solid #ccc; color: #999; background: #fff; transition: all .2s; }
         .step.active .step-circle { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
@@ -101,7 +101,7 @@
         .fi.ic { padding-left: 36px; }
         .fi-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #bbb; }
         .fg.has-icon .fl { left: 36px; }
-        .fi.ic:focus + .fi-icon + .fl, .fi.ic:not(:placeholder-shown) + .fi-icon + .fl { left: 12px; top: 0; font-size: 10px; }
+        .fi.ic:focus ~ .fl, .fi.ic:not(:placeholder-shown) ~ .fl, .fi.ic.filled ~ .fl { left: 12px; top: 0; font-size: 10px; color: #666; transform: translateY(-50%); }
         .fi.filled + .fl, .fi:disabled + .fl { top: 0; font-size: 10px; color: #666; }
         .fi:disabled { background: #f9f9f9; color: #444; }
         /* Login prompt */
@@ -348,10 +348,10 @@
             <div class="ck-main">
                 <div class="sec-head" style="padding-top:0;">Moje dane</div>
                 <div class="contact-grid">
-                    <div class="fg has-icon"><input type="email" class="fi ic" placeholder=" " id="inp-email" oninput="checkEmail(this)"><span class="fi-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><label class="fl">E-mail*</label></div>
-                    <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel"><label class="fl">Telefon*</label></div>
                     <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie"><label class="fl">Imię*</label></div>
                     <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-nazwisko"><label class="fl">Nazwisko*</label></div>
+                    <div class="fg has-icon"><input type="email" class="fi ic" placeholder=" " id="inp-email" oninput="checkEmail(this)"><span class="fi-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><label class="fl">E-mail*</label></div>
+                    <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel"><label class="fl">Telefon*</label></div>
                 </div>
                 <div class="login-prompt" id="login-prompt">
                     <div class="lp-text">Masz już konto jako <strong id="lp-email"></strong>. Zaloguj się, aby przyspieszyć zakupy.</div>
@@ -396,7 +396,6 @@
                     </div>
                 </div>
 
-                <hr class="section-sep">
                 <div class="sec-head">Metoda dostawy</div>
 
                 <div class="dc" data-m="paczkomat" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#E30613;color:#fff;padding:0 2px;border-radius:1px;">Paczkomaty 24/7</span></div><div class="dc-info"><span class="nm">InPost Paczkomat 24/7</span><span class="sub">1–2 dni robocze</span></div><span class="dc-price">14 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
@@ -463,7 +462,6 @@
                 <div class="pc" data-p="tradycyjny" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi trad">&#9993;</div><div class="pc-info"><span class="nm">Przelew tradycyjny</span><br><span class="sub">Posiadamy konto w Santanderze i mBanku</span></div></div></div>
                 <div class="gc" onclick="this.classList.toggle('checked')"><div class="gc-head"><div class="gc-chk"></div><div class="pi gift">&#127873;</div><div class="pc-info"><span class="nm">Karta podarunkowa</span></div></div></div>
 
-                <hr class="section-sep" style="margin-top:24px;">
                 <div class="sec-head">Zgody</div>
                 <div class="consent-area">
                     <div class="cb-row"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all">Zaznacz wszystkie</label></div>
@@ -474,7 +472,6 @@
                     <div style="margin-top:16px;"><div class="cb-row"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div></div>
                 </div>
 
-                <hr class="section-sep" style="margin-top:16px;">
                 <div class="sec-head">Uwagi do zamówienia</div>
                 <div><a class="uwagi-toggle" onclick="document.getElementById('uwagi-panel').classList.toggle('vis')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Dodaj</a><div class="uwagi-panel" id="uwagi-panel"><div class="uwagi-panel-inner"><div class="fg"><textarea class="fi" style="min-height:60px;resize:vertical;padding-top:12px;" placeholder="np. proszę o dokładne zapakowanie..."></textarea></div></div></div></div>
             </div>
