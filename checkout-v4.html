@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyfrowe.pl – Checkout V4</title>
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{--bg:#0d0d0f;--card:#18181b;--card2:#222226;--accent:#6366f1;--accent2:#818cf8;--green:#22c55e;--red:#ef4444;--text:#f4f4f5;--text2:#a1a1aa;--text3:#71717a;--radius:16px;--shadow:0 4px 24px rgba(0,0,0,.4)}
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;color:var(--text);background:var(--bg);line-height:1.5;overflow-x:hidden}
+        a{color:var(--accent2);cursor:pointer;text-decoration:none}
+        button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+
+        /* LAYOUT */
+        .frame{display:flex;min-height:100vh}
+        .chat-col{flex:1;display:flex;flex-direction:column;max-width:640px;margin:0 auto;padding:0 20px}
+        .receipt-col{width:340px;background:var(--card);border-left:1px solid #2a2a2e;position:fixed;right:0;top:0;bottom:0;display:flex;flex-direction:column;overflow-y:auto;transition:transform .3s}
+
+        /* HEADER */
+        .hd{padding:20px 0;display:flex;align-items:center;justify-content:space-between}
+        .logo{font-size:20px;font-weight:700;letter-spacing:-.5px;color:var(--text);text-decoration:none}
+        .logo span{color:var(--accent)}
+        .hd-badge{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
+        .hd-badge svg{width:14px;height:14px}
+
+        /* CHAT AREA */
+        .chat{flex:1;display:flex;flex-direction:column;gap:16px;padding-bottom:100px;padding-top:10px}
+
+        /* MESSAGE BUBBLES */
+        .msg{max-width:100%;opacity:0;transform:translateY(20px);animation:msgIn .4s ease forwards}
+        .msg.bot{align-self:flex-start}
+        .msg.user{align-self:flex-end}
+        .msg-inner{padding:16px 20px;border-radius:var(--radius);font-size:15px;line-height:1.6}
+        .msg.bot .msg-inner{background:var(--card);border:1px solid #2a2a2e}
+        .msg.user .msg-inner{background:var(--accent);color:#fff;border-radius:var(--radius) var(--radius) 4px var(--radius)}
+        .msg-label{font-size:11px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+        @keyframes msgIn{to{opacity:1;transform:translateY(0)}}
+
+        /* CHOICE GRID */
+        .choices{display:grid;gap:10px}
+        .choices.cols-2{grid-template-columns:1fr 1fr}
+        .choices.cols-3{grid-template-columns:1fr 1fr 1fr}
+        .choices.cols-1{grid-template-columns:1fr}
+        .ch{background:var(--card2);border:2px solid transparent;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:all .2s;cursor:pointer;text-align:left}
+        .ch:hover{border-color:var(--accent);background:#1e1e24}
+        .ch.sel{border-color:var(--accent);background:rgba(99,102,241,.12)}
+        .ch-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .ch-icon.pacz{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000}
+        .ch-icon.kurier{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
+        .ch-icon.salon{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+        .ch-icon.karta{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}
+        .ch-icon.blik{background:linear-gradient(135deg,#000,#333);color:#fff}
+        .ch-icon.gpay{background:#fff;color:#000}
+        .ch-icon.przelew{background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff}
+        .ch-icon.raty{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff}
+        .ch-icon.pobr{background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff}
+        .ch-info{flex:1;min-width:0}
+        .ch-name{font-weight:600;font-size:14px}
+        .ch-sub{font-size:12px;color:var(--text3)}
+        .ch-price{font-weight:700;font-size:14px;color:var(--accent2);flex-shrink:0}
+        .ch .ch-check{width:20px;height:20px;border-radius:50%;border:2px solid #3a3a3e;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+        .ch.sel .ch-check{background:var(--accent);border-color:var(--accent)}
+        .ch.sel .ch-check::after{content:'✓';color:#fff;font-size:12px;font-weight:700}
+
+        /* PACZKOMAT MAP INLINE */
+        .pm-inline{background:var(--card2);border-radius:12px;padding:16px;margin-top:10px;border:1px dashed #3a3a3e;text-align:center;cursor:pointer;transition:all .2s}
+        .pm-inline:hover{border-color:var(--accent);background:#1e1e24}
+        .pm-inline-icon{font-size:28px;margin-bottom:6px}
+        .pm-inline-text{font-weight:600;font-size:14px}
+        .pm-inline-sub{font-size:12px;color:var(--text3)}
+        .pm-result{display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:14px 16px;margin-top:10px}
+        .pm-result.vis{display:block}
+        .pm-result-id{font-weight:700;font-size:16px;color:var(--green)}
+        .pm-result-addr{font-size:13px;color:var(--text2);margin-top:2px}
+        .pm-result-change{font-size:12px;color:var(--accent2);margin-top:6px;display:inline-block}
+
+        /* SALON PICKER */
+        .salon-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+        .salon-opt{background:var(--card2);border:2px solid transparent;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;text-align:center;font-size:13px;font-weight:500}
+        .salon-opt:hover{border-color:var(--accent)}
+        .salon-opt.sel{border-color:var(--green);background:rgba(34,197,94,.08)}
+
+        /* COURIER FORM INLINE */
+        .cour-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+        .cour-fields .fg{position:relative}
+        .cour-fields .fi{width:100%;padding:12px 14px 6px;border:1px solid #3a3a3e;border-radius:10px;background:var(--card2);color:var(--text);font-size:14px;outline:none;transition:border-color .2s}
+        .cour-fields .fi:focus{border-color:var(--accent)}
+        .cour-fields .fl{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;transition:all .2s}
+        .cour-fields .fi:focus~.fl,.cour-fields .fi:not(:placeholder-shown)~.fl{top:8px;font-size:10px;transform:none}
+        .cour-fields .full{grid-column:1/-1}
+
+        /* SMART INPUT */
+        .smart-input-wrap{margin-top:12px}
+        .smart-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .smart-fields .fg{position:relative}
+        .smart-fields .fi{width:100%;padding:14px 14px 6px;border:1px solid #3a3a3e;border-radius:10px;background:var(--card2);color:var(--text);font-size:14px;outline:none;transition:border-color .2s}
+        .smart-fields .fi:focus{border-color:var(--accent)}
+        .smart-fields .fi.valid{border-color:var(--green)}
+        .smart-fields .fi.invalid{border-color:var(--red)}
+        .smart-fields .fl{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;transition:all .2s}
+        .smart-fields .fi:focus~.fl,.smart-fields .fi:not(:placeholder-shown)~.fl{top:8px;font-size:10px;transform:none}
+        .smart-fields .full{grid-column:1/-1}
+        .smart-fields .fi-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px}
+        .fi-icon.ok{color:var(--green)}
+        .fi-icon.err{color:var(--red)}
+
+        /* FAKTURA */
+        .fak-toggle{display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;font-size:13px;color:var(--text2)}
+        .fak-toggle input{accent-color:var(--accent)}
+        .fak-section{display:none;margin-top:10px;padding:14px;background:var(--card2);border-radius:12px;border:1px solid #2a2a2e}
+        .fak-section.vis{display:block}
+        .fak-tabs{display:flex;gap:6px;margin-bottom:10px}
+        .fak-tab{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;background:#2a2a2e;cursor:pointer;transition:all .2s}
+        .fak-tab.active{background:var(--accent);color:#fff}
+        .fak-form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .fak-form .fg{position:relative}
+        .fak-form .fi{width:100%;padding:12px 14px 6px;border:1px solid #3a3a3e;border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
+        .fak-form .fi:focus{border-color:var(--accent)}
+        .fak-form .fl{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none;transition:all .2s}
+        .fak-form .fi:focus~.fl,.fak-form .fi:not(:placeholder-shown)~.fl{top:8px;font-size:10px;transform:none}
+        .fak-form .full{grid-column:1/-1}
+        .gus-row{grid-column:1/-1;display:flex;gap:8px;align-items:end}
+        .gus-btn{padding:8px 14px;background:var(--accent);color:#fff;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+
+        /* CONTINUE BUTTON */
+        .continue-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--accent);color:#fff;border-radius:12px;font-size:15px;font-weight:700;margin-top:12px;transition:all .2s;border:none}
+        .continue-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+        .continue-btn:disabled{opacity:.4;pointer-events:none}
+        .continue-btn svg{width:16px;height:16px}
+
+        /* CONSENT */
+        .consent-area{margin-top:12px}
+        .consent-row{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);margin-bottom:8px}
+        .consent-row input{accent-color:var(--accent);margin-top:3px;flex-shrink:0}
+        .consent-row a{color:var(--accent2)}
+        .more-consents{font-size:12px;color:var(--text3);cursor:pointer;margin-top:4px}
+        .more-consents-area{display:none;margin-top:8px}
+        .more-consents-area.vis{display:block}
+
+        /* FINAL CTA */
+        .final-cta{width:100%;padding:18px;background:linear-gradient(135deg,var(--accent),#4f46e5);color:#fff;border-radius:14px;font-size:17px;font-weight:800;letter-spacing:-.3px;border:none;transition:all .2s;margin-top:12px;position:relative;overflow:hidden}
+        .final-cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.4)}
+        .final-cta:disabled{opacity:.4;pointer-events:none}
+        .final-cta::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:left .5s}
+        .final-cta:hover::before{left:100%}
+        .final-sub{text-align:center;font-size:11px;color:var(--text3);margin-top:6px}
+
+        /* RECEIPT PANEL */
+        .rc-head{padding:20px;border-bottom:1px solid #2a2a2e}
+        .rc-title{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:700}
+        .rc-items{padding:16px 20px;flex:1}
+        .rc-item{display:flex;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #222226}
+        .rc-item:last-child{border-bottom:none}
+        .rc-item-img{width:48px;height:48px;border-radius:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+        .rc-item-info{flex:1;min-width:0}
+        .rc-item-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .rc-item-qty{font-size:11px;color:var(--text3)}
+        .rc-item-price{font-size:14px;font-weight:700;flex-shrink:0;text-align:right}
+        .rc-line{display:flex;justify-content:space-between;padding:6px 20px;font-size:13px;color:var(--text2)}
+        .rc-line.delivery{opacity:0;transition:opacity .3s}
+        .rc-line.delivery.vis{opacity:1}
+        .rc-total{display:flex;justify-content:space-between;padding:16px 20px;border-top:1px solid #2a2a2e;font-size:18px;font-weight:800}
+        .rc-total-amount{color:var(--accent2)}
+        .rc-chosen{padding:0 20px 12px;opacity:0;transition:all .3s}
+        .rc-chosen.vis{opacity:1}
+        .rc-chosen-item{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+        .rc-chosen-item .rc-ci-icon{color:var(--green)}
+
+        /* TYPING INDICATOR */
+        .typing{display:flex;gap:4px;padding:12px 16px}
+        .typing-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);animation:typingBounce .6s ease infinite}
+        .typing-dot:nth-child(2){animation-delay:.15s}
+        .typing-dot:nth-child(3){animation-delay:.3s}
+        @keyframes typingBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+        /* CONFIRMATION VIEW */
+        .confirm-view{display:none;text-align:center;padding:60px 20px}
+        .confirm-view.active{display:block}
+        .conf-icon{font-size:64px;margin-bottom:16px;animation:confPop .5s ease}
+        .conf-title{font-size:28px;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,var(--green),#4ade80);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .conf-order{font-size:14px;color:var(--text2);margin-bottom:24px}
+        .conf-details{background:var(--card);border-radius:var(--radius);padding:20px;text-align:left;max-width:420px;margin:0 auto 24px}
+        .conf-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222226;font-size:14px}
+        .conf-row:last-child{border-bottom:none}
+        .conf-row-label{color:var(--text3)}
+        .conf-row-val{font-weight:600}
+        .conf-btn{display:inline-block;padding:14px 32px;background:var(--accent);color:#fff;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;transition:all .2s;border:none}
+        .conf-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+        @keyframes confPop{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+        /* CONFETTI */
+        .confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;top:-10px;z-index:999;animation:confettiFall linear forwards}
+        @keyframes confettiFall{to{top:110vh;transform:rotate(720deg)}}
+
+        /* MOBILE */
+        @media(max-width:900px){
+            .receipt-col{display:none}
+            .frame{flex-direction:column}
+        }
+        @media(max-width:600px){
+            .chat-col{padding:0 14px}
+            .choices.cols-2{grid-template-columns:1fr}
+            .smart-fields{grid-template-columns:1fr}
+            .salon-grid{grid-template-columns:1fr}
+        }
+
+        /* MOBILE RECEIPT TOGGLE */
+        .mob-receipt{display:none;position:fixed;bottom:16px;right:16px;width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;font-size:20px;z-index:200;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+        @media(max-width:900px){.mob-receipt{display:flex}}
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar{width:6px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+
+        /* LOGIN PROMPT */
+        .lp{display:none;margin-top:8px;padding:12px 16px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px}
+        .lp.vis{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+        .lp-btn{padding:6px 14px;background:var(--accent);color:#fff;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+        .lp-x{cursor:pointer;font-size:16px;color:var(--text3);margin-left:auto}
+    </style>
+</head>
+<body>
+
+<div class="frame">
+<div class="chat-col">
+    <header class="hd">
+        <a class="logo" href="#">cyfrowe<span>.pl</span></a>
+        <div class="hd-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Bezpieczny checkout</div>
+    </header>
+
+    <div class="chat" id="chat">
+        <!-- Messages will be added dynamically -->
+    </div>
+
+    <div class="confirm-view" id="confirm-view">
+        <div class="conf-icon">✓</div>
+        <div class="conf-title">Zamówienie złożone!</div>
+        <div class="conf-order">Numer zamówienia: <b id="conf-num"></b></div>
+        <div class="conf-details">
+            <div class="conf-row"><span class="conf-row-label">Dostawa</span><span class="conf-row-val" id="conf-del"></span></div>
+            <div class="conf-row"><span class="conf-row-label">Adres</span><span class="conf-row-val" id="conf-addr"></span></div>
+            <div class="conf-row"><span class="conf-row-label">Płatność</span><span class="conf-row-val" id="conf-pay"></span></div>
+            <div class="conf-row"><span class="conf-row-label">E-mail</span><span class="conf-row-val" id="conf-email"></span></div>
+            <div class="conf-row"><span class="conf-row-label">Kwota</span><span class="conf-row-val" id="conf-total"></span></div>
+        </div>
+        <button class="conf-btn" onclick="location.reload()">Wróć do sklepu</button>
+    </div>
+</div>
+
+<!-- RECEIPT PANEL -->
+<div class="receipt-col" id="receipt">
+    <div class="rc-head"><div class="rc-title">Twoje zamówienie</div></div>
+    <div class="rc-items">
+        <div class="rc-item"><div class="rc-item-img">🎒</div><div class="rc-item-info"><div class="rc-item-name">Plecak Lowepro Tahoe BP 150</div><div class="rc-item-qty">3 szt. × 279 zł</div></div><div class="rc-item-price">837 zł</div></div>
+        <div class="rc-item"><div class="rc-item-img">📷</div><div class="rc-item-info"><div class="rc-item-name">Pasek PEAKDESIGN CUFF v3</div><div class="rc-item-qty">1 szt.</div></div><div class="rc-item-price">188 zł</div></div>
+    </div>
+    <div class="rc-line"><span>Produkty</span><span>1 025 zł</span></div>
+    <div class="rc-line delivery" id="rc-delivery"><span>Dostawa</span><span id="rc-del-price">—</span></div>
+    <div class="rc-chosen" id="rc-chosen">
+        <div class="rc-chosen-item" id="rc-ch-del" style="display:none"><span class="rc-ci-icon">✓</span><span id="rc-ch-del-text"></span></div>
+        <div class="rc-chosen-item" id="rc-ch-pay" style="display:none"><span class="rc-ci-icon">✓</span><span id="rc-ch-pay-text"></span></div>
+    </div>
+    <div class="rc-total"><span>Do zapłaty</span><span class="rc-total-amount" id="rc-total">1 025 zł</span></div>
+</div>
+</div>
+
+<button class="mob-receipt" onclick="toggleMobReceipt()">🧾</button>
+
+<script>
+// ===== STATE =====
+let step=0;
+let selDelivery=null,selPayment=null,deliveryDetail='',fakType='firma';
+const basePrice=1025;
+const delData={
+    'paczkomat':{name:'InPost Paczkomat 24/7',price:14,type:'paczkomat'},
+    'kurier-dpd':{name:'Kurier DPD',price:15,type:'kurier'},
+    'kurier-inpost':{name:'Kurier InPost',price:17,type:'kurier'},
+    'kurier-pocztex':{name:'Kurier Pocztex',price:19,type:'kurier'},
+    'salon':{name:'Odbiór w salonie',price:0,type:'salon'}
+};
+const payData={
+    'karta':{name:'Karta online',icon:'💳',cls:'karta'},
+    'blik':{name:'BLIK',icon:'B',cls:'blik'},
+    'gpay':{name:'Google Pay',icon:'G',cls:'gpay'},
+    'przelew':{name:'Szybki przelew',icon:'⇄',cls:'przelew'},
+    'raty':{name:'Raty',icon:'R',cls:'raty'},
+    'pobranie':{name:'Za pobraniem',icon:'📦',cls:'pobr'}
+};
+const chat=document.getElementById('chat');
+
+// ===== CHAT ENGINE =====
+function addMsg(type,html,delay){
+    return new Promise(resolve=>{
+        setTimeout(()=>{
+            // Remove typing indicator if present
+            const typing=chat.querySelector('.typing-wrap');
+            if(typing)typing.remove();
+            const div=document.createElement('div');
+            div.className='msg '+type;
+            div.innerHTML='<div class="msg-inner">'+html+'</div>';
+            chat.appendChild(div);
+            scrollChat();
+            resolve(div);
+        },delay||0);
+    });
+}
+
+function showTyping(){
+    const div=document.createElement('div');
+    div.className='msg bot typing-wrap';
+    div.innerHTML='<div class="msg-inner"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
+    chat.appendChild(div);
+    scrollChat();
+}
+
+function scrollChat(){
+    setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}),50);
+}
+
+function updateReceipt(){
+    const dp=selDelivery?delData[selDelivery].price:0;
+    const total=basePrice+dp;
+    document.getElementById('rc-total').textContent=total.toLocaleString('pl-PL')+' zł';
+    if(selDelivery){
+        document.getElementById('rc-del-price').textContent=dp>0?dp+' zł':'Gratis';
+        document.getElementById('rc-delivery').classList.add('vis');
+    }
+    document.getElementById('rc-chosen').classList.add('vis');
+}
+
+// ===== STEP 1: WELCOME + DELIVERY =====
+async function startFlow(){
+    showTyping();
+    await addMsg('bot','Cześć! 👋 Pomogu Ci szybko złożyć zamówienie.<br><b>2 produkty · 1 025 zł</b> — zaczynamy!',600);
+
+    showTyping();
+    await addMsg('bot','<div class="msg-label">Jak chcesz odebrać przesyłkę?</div>'+
+        '<div class="choices cols-1" id="del-choices">'+
+            '<div class="ch" onclick="pickDelivery(this,\'paczkomat\')"><div class="ch-icon pacz">📦</div><div class="ch-info"><div class="ch-name">InPost Paczkomat 24/7</div><div class="ch-sub">1–2 dni robocze · automat blisko Ciebie</div></div><div class="ch-price">14 zł</div><div class="ch-check"></div></div>'+
+            '<div class="ch" onclick="pickDelivery(this,\'kurier-dpd\')"><div class="ch-icon kurier">🚚</div><div class="ch-info"><div class="ch-name">Kurier DPD</div><div class="ch-sub">1 dzień roboczy · do drzwi</div></div><div class="ch-price">15 zł</div><div class="ch-check"></div></div>'+
+            '<div class="ch" onclick="pickDelivery(this,\'kurier-inpost\')"><div class="ch-icon kurier">🚚</div><div class="ch-info"><div class="ch-name">Kurier InPost</div><div class="ch-sub">1 dzień roboczy</div></div><div class="ch-price">17 zł</div><div class="ch-check"></div></div>'+
+            '<div class="ch" onclick="pickDelivery(this,\'kurier-pocztex\')"><div class="ch-icon kurier">🚚</div><div class="ch-info"><div class="ch-name">Kurier Pocztex</div><div class="ch-sub">1 dzień roboczy</div></div><div class="ch-price">19 zł</div><div class="ch-check"></div></div>'+
+            '<div class="ch" onclick="pickDelivery(this,\'salon\')"><div class="ch-icon salon">🏪</div><div class="ch-info"><div class="ch-name">Odbiór w salonie</div><div class="ch-sub">Gdańsk, Katowice, Kraków, Łódź, Poznań, Warszawa</div></div><div class="ch-price">0 zł</div><div class="ch-check"></div></div>'+
+        '</div>',500);
+}
+
+function pickDelivery(el,key){
+    if(selDelivery)return; // already chosen
+    el.closest('.choices').querySelectorAll('.ch').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    selDelivery=key;
+    updateReceipt();
+
+    const d=delData[key];
+    document.getElementById('rc-ch-del').style.display='flex';
+    document.getElementById('rc-ch-del-text').textContent=d.name;
+
+    // Disable other choices
+    el.closest('.choices').querySelectorAll('.ch').forEach(c=>{
+        if(!c.classList.contains('sel'))c.style.opacity='.3';c.style.pointerEvents='none';
+    });
+
+    if(d.type==='paczkomat') showPaczkomatPicker();
+    else if(d.type==='salon') showSalonPicker();
+    else if(d.type==='kurier') showCourierForm(el);
+}
+
+function showPaczkomatPicker(){
+    addMsg('user','📦 Paczkomat InPost',100).then(()=>{
+        showTyping();
+        addMsg('bot','<div class="msg-label">Wybierz swój paczkomat</div>'+
+            '<div class="pm-inline" id="pm-pick" onclick="simulatePaczkomat()"><div class="pm-inline-icon">📍</div><div class="pm-inline-text">Kliknij, aby wybrać na mapie</div><div class="pm-inline-sub">Otworzymy mapę InPost</div></div>'+
+            '<div class="pm-result" id="pm-result"><div class="pm-result-id" id="pm-res-id"></div><div class="pm-result-addr" id="pm-res-addr"></div><a class="pm-result-change" onclick="simulatePaczkomat()">Zmień paczkomat</a></div>',400);
+    });
+}
+
+function simulatePaczkomat(){
+    document.getElementById('pm-pick').style.display='none';
+    document.getElementById('pm-res-id').textContent='WAW31N';
+    document.getElementById('pm-res-addr').textContent='Siedmiogrodzka 11, 01-232 Warszawa · Przy markecie Api';
+    document.getElementById('pm-result').classList.add('vis');
+    deliveryDetail='Paczkomat WAW31N · Siedmiogrodzka 11';
+    // Proceed to data step
+    setTimeout(()=>showDataStep(),600);
+}
+
+function showSalonPicker(){
+    addMsg('user','🏪 Odbiór w salonie',100).then(()=>{
+        showTyping();
+        addMsg('bot','<div class="msg-label">Wybierz salon</div>'+
+            '<div class="salon-grid" id="salon-grid">'+
+                '<div class="salon-opt" onclick="pickSalon(this,\'Warszawa\')">Warszawa</div>'+
+                '<div class="salon-opt" onclick="pickSalon(this,\'Kraków\')">Kraków</div>'+
+                '<div class="salon-opt" onclick="pickSalon(this,\'Gdańsk\')">Gdańsk</div>'+
+                '<div class="salon-opt" onclick="pickSalon(this,\'Katowice\')">Katowice</div>'+
+                '<div class="salon-opt" onclick="pickSalon(this,\'Łódź\')">Łódź</div>'+
+                '<div class="salon-opt" onclick="pickSalon(this,\'Poznań\')">Poznań</div>'+
+            '</div>',400);
+    });
+}
+
+function pickSalon(el,city){
+    document.querySelectorAll('.salon-opt').forEach(s=>{s.classList.remove('sel');s.style.pointerEvents='none';});
+    el.classList.add('sel');
+    deliveryDetail='Salon '+city;
+    addMsg('user','🏪 Salon '+city,100).then(()=>{
+        setTimeout(()=>showDataStep(),400);
+    });
+}
+
+function showCourierForm(delEl){
+    const name=delData[selDelivery].name;
+    addMsg('user','🚚 '+name,100).then(()=>{
+        showTyping();
+        addMsg('bot','<div class="msg-label">Adres dostawy kurierem</div>'+
+            '<div class="cour-fields" id="cour-fields">'+
+                '<div class="fg full"><input type="text" class="fi" id="cour-name" placeholder=" "><label class="fl">Imię i nazwisko / firma</label></div>'+
+                '<div class="fg full"><input type="text" class="fi" id="cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div>'+
+                '<div class="fg"><input type="text" class="fi" id="cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div>'+
+                '<div class="fg"><input type="text" class="fi" id="cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div>'+
+                '<div class="fg"><input type="text" class="fi" id="cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div>'+
+                '<div class="fg"><input type="text" class="fi" id="cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div>'+
+            '</div>'+
+            '<button class="continue-btn" id="cour-btn" onclick="submitCourier()">Dalej <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>',400);
+    });
+}
+
+function submitCourier(){
+    const f=id=>document.getElementById(id)?.value?.trim();
+    const u=f('cour-ulica'),nd=f('cour-nrdomu'),k=f('cour-kod'),m=f('cour-miasto');
+    if(!u||!nd||!k||!m){
+        ['cour-ulica','cour-nrdomu','cour-kod','cour-miasto'].forEach(id=>{
+            const el=document.getElementById(id);if(el&&!el.value.trim())el.style.borderColor='var(--red)';
+        });
+        return;
+    }
+    deliveryDetail=u+' '+nd+(f('cour-nrmiesz')?'/'+f('cour-nrmiesz'):'')+', '+k+' '+m;
+    addMsg('user','📍 '+deliveryDetail,50).then(()=>{
+        setTimeout(()=>showDataStep(),400);
+    });
+}
+
+// ===== STEP 2: PERSONAL DATA =====
+function showDataStep(){
+    showTyping();
+    addMsg('bot','<div class="msg-label">Twoje dane kontaktowe</div>'+
+        '<div class="smart-input-wrap">'+
+            '<div class="smart-fields" id="smart-fields">'+
+                '<div class="fg"><input type="text" class="fi" id="s-fname" placeholder=" " oninput="liveValidateField(this,\'name\')" onblur="liveValidateField(this,\'name\')"><label class="fl">Imię*</label><span class="fi-icon" id="ic-fname"></span></div>'+
+                '<div class="fg"><input type="text" class="fi" id="s-lname" placeholder=" " oninput="liveValidateField(this,\'name\')" onblur="liveValidateField(this,\'name\')"><label class="fl">Nazwisko*</label><span class="fi-icon" id="ic-lname"></span></div>'+
+                '<div class="fg full"><input type="email" class="fi" id="s-email" placeholder=" " oninput="liveValidateField(this,\'email\')" onblur="handleEmailBlur(this)"><label class="fl">E-mail*</label><span class="fi-icon" id="ic-email"></span></div>'+
+                '<div class="fg full"><input type="tel" class="fi" id="s-tel" placeholder=" " oninput="liveValidateField(this,\'tel\')" onblur="liveValidateField(this,\'tel\')"><label class="fl">Telefon*</label><span class="fi-icon" id="ic-tel"></span></div>'+
+            '</div>'+
+            '<div id="login-prompt"></div>'+
+            '<label class="fak-toggle"><input type="checkbox" id="fak-check" onchange="toggleFak()"> Chcę fakturę</label>'+
+            '<div class="fak-section" id="fak-section">'+
+                '<div class="fak-tabs"><div class="fak-tab active" onclick="setFakType(\'firma\',this)">Na firmę</div><div class="fak-tab" onclick="setFakType(\'osoba\',this)">Na osobę</div></div>'+
+                '<div id="fak-firma">'+
+                    '<div class="fak-form">'+
+                        '<div class="gus-row"><div class="fg" style="flex:1"><input type="text" class="fi" id="fak-nip" placeholder=" "><label class="fl">NIP*</label></div><button class="gus-btn" onclick="fetchGUS()">Pobierz z GUS</button></div>'+
+                        '<div class="fg full"><input type="text" class="fi" id="gus-firma" placeholder=" "><label class="fl">Nazwa firmy*</label></div>'+
+                        '<div class="fg"><input type="text" class="fi" id="gus-ulica" placeholder=" "><label class="fl">Ulica*</label></div>'+
+                        '<div class="fg"><input type="text" class="fi" id="gus-nr" placeholder=" "><label class="fl">Nr domu*</label></div>'+
+                        '<div class="fg"><input type="text" class="fi" id="gus-kod" placeholder=" "><label class="fl">Kod*</label></div>'+
+                        '<div class="fg"><input type="text" class="fi" id="gus-miasto" placeholder=" "><label class="fl">Miasto*</label></div>'+
+                    '</div>'+
+                '</div>'+
+                '<div id="fak-osoba" style="display:none">'+
+                    '<div class="fak-form">'+
+                        '<div class="fg"><input type="text" class="fi" id="fo-imie" placeholder=" "><label class="fl">Imię*</label></div>'+
+                        '<div class="fg"><input type="text" class="fi" id="fo-nazw" placeholder=" "><label class="fl">Nazwisko*</label></div>'+
+                        '<div class="fg full"><input type="text" class="fi" id="fo-ulica" placeholder=" "><label class="fl">Ulica + nr*</label></div>'+
+                        '<div class="fg"><input type="text" class="fi" id="fo-kod" placeholder=" "><label class="fl">Kod*</label></div>'+
+                        '<div class="fg"><input type="text" class="fi" id="fo-miasto" placeholder=" "><label class="fl">Miasto*</label></div>'+
+                    '</div>'+
+                '</div>'+
+            '</div>'+
+            '<button class="continue-btn" id="data-btn" onclick="submitData()">Dalej <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>'+
+        '</div>',500);
+}
+
+function liveValidateField(inp,type){
+    const v=inp.value.trim();
+    const iconEl=inp.parentElement.querySelector('.fi-icon');
+    let valid=false;
+    if(type==='name')valid=v.length>=2;
+    else if(type==='email')valid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    else if(type==='tel')valid=/^\d{7,15}$/.test(v.replace(/[\s\-\+]/g,''));
+    inp.classList.remove('valid','invalid');
+    if(v){
+        inp.classList.add(valid?'valid':'invalid');
+        if(iconEl){iconEl.textContent=valid?'✓':'✕';iconEl.className='fi-icon '+(valid?'ok':'err');}
+    } else {
+        if(iconEl){iconEl.textContent='';iconEl.className='fi-icon';}
+    }
+}
+
+function handleEmailBlur(inp){
+    liveValidateField(inp,'email');
+    const v=inp.value.trim();
+    if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){
+        const lp=document.getElementById('login-prompt');
+        lp.innerHTML='<div class="lp vis">Masz u nas konto? Zaloguj się, aby przyspieszyć.<button class="lp-btn" onclick="doLogin()">Zaloguj</button><span class="lp-x" onclick="this.closest(\'.lp\').classList.remove(\'vis\')">✕</span></div>';
+    }
+}
+
+function doLogin(){
+    document.getElementById('s-fname').value='Jan';
+    document.getElementById('s-lname').value='Kowalski';
+    document.getElementById('s-tel').value='500100200';
+    ['s-fname','s-lname','s-tel'].forEach(id=>{
+        const inp=document.getElementById(id);
+        inp.dispatchEvent(new Event('input'));
+    });
+    document.querySelector('.lp')?.classList.remove('vis');
+}
+
+function toggleFak(){
+    document.getElementById('fak-section').classList.toggle('vis',document.getElementById('fak-check').checked);
+}
+
+function setFakType(type,tab){
+    fakType=type;
+    tab.closest('.fak-tabs').querySelectorAll('.fak-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('fak-firma').style.display=type==='firma'?'block':'none';
+    document.getElementById('fak-osoba').style.display=type==='osoba'?'block':'none';
+}
+
+function fetchGUS(){
+    const nip=document.getElementById('fak-nip').value.trim();
+    if(!nip)return;
+    document.getElementById('gus-firma').value='CYFROWE.PL SP. Z O.O.';
+    document.getElementById('gus-ulica').value='Rondo Daszyńskiego 1';
+    document.getElementById('gus-nr').value='1';
+    document.getElementById('gus-kod').value='00-843';
+    document.getElementById('gus-miasto').value='Warszawa';
+}
+
+function submitData(){
+    const f=id=>document.getElementById(id)?.value?.trim();
+    const fn=f('s-fname'),ln=f('s-lname'),em=f('s-email'),tel=f('s-tel');
+    let ok=true;
+    if(!fn||fn.length<2){document.getElementById('s-fname').classList.add('invalid');ok=false;}
+    if(!ln||ln.length<2){document.getElementById('s-lname').classList.add('invalid');ok=false;}
+    if(!em||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){document.getElementById('s-email').classList.add('invalid');ok=false;}
+    if(!tel||!/^\d{7,15}$/.test(tel.replace(/[\s\-\+]/g,''))){document.getElementById('s-tel').classList.add('invalid');ok=false;}
+    if(!ok)return;
+    // Show user response
+    addMsg('user','👤 '+fn+' '+ln+'<br>📧 '+em+'<br>📱 '+tel,50).then(()=>{
+        setTimeout(()=>showPaymentStep(),400);
+    });
+}
+
+// ===== STEP 3: PAYMENT =====
+function showPaymentStep(){
+    showTyping();
+    let payHTML='<div class="msg-label">Jak chcesz zapłacić?</div><div class="choices cols-2" id="pay-choices">';
+    for(const[k,v] of Object.entries(payData)){
+        if(k==='pobranie'&&delData[selDelivery].type!=='kurier')continue;
+        payHTML+='<div class="ch" onclick="pickPayment(this,\''+k+'\')"><div class="ch-icon '+v.cls+'">'+v.icon+'</div><div class="ch-info"><div class="ch-name">'+v.name+'</div></div><div class="ch-check"></div></div>';
+    }
+    payHTML+='</div>';
+    addMsg('bot',payHTML,500);
+}
+
+function pickPayment(el,key){
+    if(selPayment)return;
+    el.closest('.choices').querySelectorAll('.ch').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    selPayment=key;
+    document.getElementById('rc-ch-pay').style.display='flex';
+    document.getElementById('rc-ch-pay-text').textContent=payData[key].name;
+    updateReceipt();
+
+    el.closest('.choices').querySelectorAll('.ch').forEach(c=>{
+        if(!c.classList.contains('sel'))c.style.opacity='.3';c.style.pointerEvents='none';
+    });
+
+    addMsg('user','💳 '+payData[key].name,100).then(()=>{
+        setTimeout(()=>showFinalStep(),400);
+    });
+}
+
+// ===== STEP 4: FINAL =====
+function showFinalStep(){
+    showTyping();
+    const total=(basePrice+(selDelivery?delData[selDelivery].price:0)).toLocaleString('pl-PL');
+    addMsg('bot','<div class="msg-label">Ostatni krok!</div>'+
+        '<div style="margin-bottom:8px">Sprawdź podsumowanie i potwierdź zamówienie:</div>'+
+        '<div style="background:var(--card2);border-radius:12px;padding:14px 16px;margin-bottom:4px">'+
+            '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text3)">Dostawa</span><span>'+delData[selDelivery].name+'</span></div>'+
+            (deliveryDetail?'<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text3)">Adres</span><span>'+deliveryDetail+'</span></div>':'')+
+            '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text3)">Płatność</span><span>'+payData[selPayment].name+'</span></div>'+
+            '<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:8px;border-top:1px solid #333"><span>Do zapłaty</span><span style="color:var(--accent2)">'+total+' zł</span></div>'+
+        '</div>'+
+        '<div class="consent-area">'+
+            '<div class="consent-row"><input type="checkbox" id="c-req"><span>*Akceptuję <a href="#">Regulamin</a>, <a href="#">Zasady Sprzedaży</a> i <a href="#">Politykę Prywatności</a>.</span></div>'+
+            '<div class="more-consents" onclick="document.getElementById(\'mc-area\').classList.toggle(\'vis\')">Więcej zgód marketingowych ▾</div>'+
+            '<div class="more-consents-area" id="mc-area">'+
+                '<div class="consent-row"><input type="checkbox"><span>Zgoda na newsletter i oferty promocyjne</span></div>'+
+                '<div class="consent-row"><input type="checkbox"><span>Zgoda na kontakt telefoniczny</span></div>'+
+            '</div>'+
+        '</div>'+
+        '<button class="final-cta" id="final-cta" onclick="submitOrder()">Kupuję i płacę — '+total+' zł</button>'+
+        '<div class="final-sub">Klikając powyżej potwierdzasz zamówienie z obowiązkiem zapłaty</div>',500);
+}
+
+function submitOrder(){
+    if(!document.getElementById('c-req').checked){
+        document.getElementById('c-req').style.outline='2px solid var(--red)';
+        return;
+    }
+    // Show confirmation
+    const num='#'+Math.floor(1000000+Math.random()*9000000);
+    const total=(basePrice+(selDelivery?delData[selDelivery].price:0)).toLocaleString('pl-PL')+' zł';
+    document.getElementById('conf-num').textContent=num;
+    document.getElementById('conf-del').textContent=delData[selDelivery].name;
+    document.getElementById('conf-addr').textContent=deliveryDetail||'—';
+    document.getElementById('conf-pay').textContent=payData[selPayment].name;
+    document.getElementById('conf-email').textContent=document.getElementById('s-email')?.value||'—';
+    document.getElementById('conf-total').textContent=total;
+
+    chat.style.display='none';
+    document.getElementById('confirm-view').classList.add('active');
+    document.getElementById('receipt').style.display='none';
+    launchConfetti();
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ===== CONFETTI =====
+function launchConfetti(){
+    const colors=['#6366f1','#22c55e','#f59e0b','#ef4444','#ec4899','#06b6d4'];
+    for(let i=0;i<80;i++){
+        const piece=document.createElement('div');
+        piece.className='confetti-piece';
+        piece.style.left=Math.random()*100+'vw';
+        piece.style.background=colors[Math.floor(Math.random()*colors.length)];
+        piece.style.width=(6+Math.random()*8)+'px';
+        piece.style.height=(6+Math.random()*8)+'px';
+        piece.style.animationDuration=(1.5+Math.random()*2)+'s';
+        piece.style.animationDelay=(Math.random()*.5)+'s';
+        piece.style.borderRadius=Math.random()>.5?'50%':'2px';
+        document.body.appendChild(piece);
+        setTimeout(()=>piece.remove(),4000);
+    }
+}
+
+// ===== MOBILE RECEIPT =====
+function toggleMobReceipt(){
+    const rc=document.getElementById('receipt');
+    const isVis=rc.style.display==='flex';
+    rc.style.cssText=isVis?'display:none':'display:flex;position:fixed;top:0;right:0;bottom:0;width:85vw;max-width:340px;z-index:300;transform:translateX(0)';
+}
+
+// ===== START =====
+startFlow();
+</script>
+</body>
+</html>
