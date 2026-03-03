@@ -175,20 +175,10 @@
         .cb-text a { color: #1a1a1a; text-decoration: underline; }
         .cb-text strong { font-weight: 600; }
         .consent-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
-        /* Select-all bar */
-        .consent-select-all { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; margin-bottom: 16px; cursor: pointer; transition: background .2s, border-color .2s; }
-        .consent-select-all:hover { background: #dcfce7; border-color: #86efac; }
-        .consent-select-all input[type="checkbox"] { width: 18px; height: 18px; accent-color: #16a34a; flex-shrink: 0; }
-        .consent-select-all label { font-size: 14px; font-weight: 600; color: #15803d; cursor: pointer; }
-        .consent-select-all .csa-hint { font-size: 12px; color: #4ade80; margin-left: auto; }
-        /* Marketing group card */
-        .mkt-group { background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
-        .mkt-channels { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-        .mkt-chip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #fff; border: 1.5px solid #e0e0e0; border-radius: 20px; cursor: pointer; transition: all .15s; user-select: none; }
-        .mkt-chip:hover { border-color: #16a34a; background: #f0fdf4; }
-        .mkt-chip.checked { border-color: #16a34a; background: #f0fdf4; }
-        .mkt-chip input[type="checkbox"] { width: 15px; height: 15px; accent-color: #16a34a; flex-shrink: 0; }
-        .mkt-chip label { font-size: 13px; color: #333; cursor: pointer; white-space: nowrap; }
+        /* Consent channels inline */
+        .mkt-channels { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 14px; }
+        .mkt-channels label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; cursor: pointer; }
+        .mkt-channels input[type="checkbox"] { width: 14px; height: 14px; accent-color: #1a1a1a; }
         .uwagi-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1a1a1a; text-decoration: underline; cursor: pointer; margin-top: 4px; }
         .uwagi-toggle svg { width: 12px; height: 12px; }
         .uwagi-panel { max-height: 0; overflow: hidden; transition: max-height .3s; }
@@ -267,11 +257,6 @@
         /* Trust badges */
         .trust-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;flex-wrap:wrap}
         .trust-badge{font-size:10px;color:#888;font-weight:600;display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border:1px solid #e5e5e5;border-radius:4px;background:#fafafa}
-        /* Coupon */
-        .coupon-toggle{font-size:12px;color:#888;text-decoration:underline;cursor:pointer}
-        .coupon-box{max-height:0;overflow:hidden;transition:max-height .3s}.coupon-box.vis{max-height:80px}
-        .coupon-inner{display:flex;gap:8px;align-items:flex-start;padding-top:8px}
-        .coupon-btn{padding:11px 18px;background:#1a1a1a;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
         /* Cross-sell */
         .xs-prod{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0}
         .xs-prod:last-child{border-bottom:none}
@@ -390,20 +375,14 @@
 
                 <div class="sec-head">Zgody</div>
                 <div class="consent-area">
-                    <div class="consent-select-all" onclick="document.getElementById('c-all').click()">
-                        <input type="checkbox" id="c-all" onchange="toggleAll(this)" onclick="event.stopPropagation()">
-                        <label for="c-all">Zaznacz wszystkie zgody</label>
-                        <span class="csa-hint">Zalecane</span>
+                    <div class="cb-row" style="margin-bottom:14px"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all" style="font-weight:600;color:#1a1a1a">Zaznacz wszystkie</label></div>
+                    <div class="consent-desc">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
+                    <div class="mkt-channels">
+                        <label><input type="checkbox" class="mkt-cb"> E-mail</label>
+                        <label><input type="checkbox" class="mkt-cb"> Połączeń telefonicznych</label>
+                        <label><input type="checkbox" class="mkt-cb"> WhatsApp/Messenger/SMS</label>
                     </div>
-                    <div class="mkt-group">
-                        <div class="consent-desc">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
-                        <div class="mkt-channels">
-                            <label class="mkt-chip" id="chip-email"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span>E-mail</span></label>
-                            <label class="mkt-chip" id="chip-phone"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span>Połączeń telefonicznych</span></label>
-                            <label class="mkt-chip" id="chip-msg"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span>WhatsApp/Messenger/SMS</span></label>
-                        </div>
-                    </div>
-                    <div style="margin-top:4px;"><div class="cb-row"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div></div>
+                    <div class="cb-row"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div>
                 </div>
 
                 <!-- UWAGI -->
@@ -411,9 +390,6 @@
                 <div class="sec-head">Uwagi do zamówienia</div>
                 <div><a class="uwagi-toggle" onclick="document.getElementById('uwagi-panel').classList.toggle('vis')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Dodaj</a><div class="uwagi-panel" id="uwagi-panel"><div class="uwagi-panel-inner"><div class="fg"><textarea class="fi" style="min-height:60px;resize:vertical;padding-top:12px;" placeholder="np. proszę o dokładne zapakowanie..."></textarea></div></div></div></div>
 
-                <!-- KUPON -->
-                <div style="margin-top:16px;"><a class="coupon-toggle" onclick="document.getElementById('coupon-box').classList.toggle('vis')">Masz kod promocyjny?</a>
-                <div class="coupon-box" id="coupon-box"><div class="coupon-inner"><div class="fg" style="margin-bottom:0;flex:1"><input type="text" class="fi" placeholder=" " id="coupon-input"><label class="fl">Kod promocyjny</label></div><button type="button" class="coupon-btn" onclick="applyCoupon()">Zastosuj</button></div></div></div>
 
                 <!-- MAIN CTA -->
                 <div class="main-cta-wrap">
@@ -594,8 +570,7 @@ function updateSidebar(){
     document.getElementById('sdi-method').textContent=d.name;document.getElementById('sdi-detail').textContent=d.detail;document.getElementById('sd-info').classList.add('vis');
 }
 
-function toggleAll(cb){const ch=cb.checked;document.querySelectorAll('.mkt-cb').forEach(c=>c.checked=ch);document.getElementById('c-req').checked=ch;updateChips();}
-function updateChips(){document.querySelectorAll('.mkt-chip').forEach(chip=>{const cb=chip.querySelector('input[type=checkbox]');chip.classList.toggle('checked',cb&&cb.checked);});}
+function toggleAll(cb){const ch=cb.checked;document.querySelectorAll('.mkt-cb').forEach(c=>c.checked=ch);document.getElementById('c-req').checked=ch;}
 
 // EMAIL LOGIN CHECK
 const knownEmails=['konto@cyfrowe.pl'];
@@ -784,8 +759,6 @@ function submitOrder(){
     switchView('view-confirm');
 }
 
-// ===== COUPON =====
-function applyCoupon(){const v=document.getElementById('coupon-input').value.trim();if(!v)return;document.getElementById('coupon-box').innerHTML='<div style="display:flex;align-items:center;gap:6px;padding-top:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg><span style="font-size:12px;color:#2E7D32;font-weight:600">Kod \"'+v+'\" zastosowany</span></div>';}
 
 // ===== AUTO-FILL CITY FROM ZIP =====
 const zipMap={'00':'Warszawa','01':'Warszawa','02':'Warszawa','03':'Warszawa','04':'Warszawa','05':'Warszawa','10':'Olsztyn','15':'Białystok','20':'Lublin','25':'Kielce','30':'Kraków','31':'Kraków','35':'Rzeszów','40':'Katowice','41':'Katowice','42':'Katowice','43':'Katowice','44':'Katowice','45':'Opole','50':'Wrocław','51':'Wrocław','53':'Wrocław','54':'Wrocław','55':'Wrocław','58':'Wrocław','60':'Poznań','61':'Poznań','65':'Zielona Góra','70':'Szczecin','71':'Szczecin','75':'Koszalin','80':'Gdańsk','81':'Gdynia','85':'Bydgoszcz','87':'Toruń','90':'Łódź','91':'Łódź','92':'Łódź','93':'Łódź','94':'Łódź'};
