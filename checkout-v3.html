@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyfrowe.pl – Checkout V3</title>
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px;color:#1a1a1a;background:#f0f0f0;line-height:1.5;padding-bottom:80px}
+        a{color:#1a1a1a;cursor:pointer}button{cursor:pointer;font-family:inherit}
+
+        /* HEADER */
+        .hd{max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#fff;border-bottom:1px solid #e5e5e5}
+        .logo{font-size:20px;font-weight:700;letter-spacing:-.5px;border:2px solid #1a1a1a;padding:3px 10px;line-height:1.2;text-decoration:none;color:#1a1a1a}
+        .hd-lock{display:flex;align-items:center;gap:5px;font-size:12px;color:#2E7D32;font-weight:500}
+        .hd-lock svg{width:14px;height:14px}
+
+        .view{display:none}.view.active{display:block}
+
+        /* ORDER BAR */
+        .ob{max-width:700px;margin:0 auto;background:#fff;border-bottom:1px solid #e5e5e5;cursor:pointer;transition:all .2s}
+        .ob-row{display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
+        .ob-left{display:flex;align-items:center;gap:10px;font-size:13px;color:#666}
+        .ob-left b{color:#1a1a1a}
+        .ob-price{font-size:16px;font-weight:700}
+        .ob-detail{max-height:0;overflow:hidden;transition:max-height .3s ease}
+        .ob.open .ob-detail{max-height:200px}
+        .ob-detail-inner{padding:0 24px 14px;border-top:1px solid #f0f0f0}
+        .ob-prod{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px}
+        .ob-prod:not(:last-child){border-bottom:1px solid #f5f5f5}
+        .ob-thumb{width:40px;height:40px;background:#f5f5f5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .ob-prod .pn{font-weight:500}.ob-prod .pp{font-weight:700;margin-left:auto;white-space:nowrap}
+        .ob-chev{color:#999;font-size:14px;transition:transform .2s}.ob.open .ob-chev{transform:rotate(180deg)}
+
+        /* FLOW */
+        .flow{max-width:700px;margin:0 auto;padding:16px 24px 32px}
+
+        /* CARD */
+        .ck{background:#fff;border-radius:12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;transition:all .3s ease}
+        .ck.locked{opacity:.45;pointer-events:none}
+        .ck.locked .ck-h{cursor:default}
+        .ck-h{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:default}
+        .ck.done .ck-h{cursor:pointer}
+        .ck-num{width:28px;height:28px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#999;flex-shrink:0;transition:all .2s}
+        .ck.active .ck-num{background:#1a1a1a;color:#fff}
+        .ck.done .ck-num{background:#2E7D32;color:#fff}
+        .ck-title{font-size:16px;font-weight:700;flex:1}
+        .ck-status{font-size:12px;color:#999;font-weight:500}
+        .ck.done .ck-status{color:#2E7D32}
+        .ck-edit{font-size:12px;color:#1a1a1a;text-decoration:underline;display:none;cursor:pointer}
+        .ck.done .ck-edit{display:inline}
+
+        /* CARD BODY */
+        .ck-b{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+        .ck.active .ck-b{max-height:2000px}
+        .ck-b-inner{padding:0 20px 20px}
+
+        /* CARD SUMMARY */
+        .ck-sum{max-height:0;overflow:hidden;transition:max-height .3s ease}
+        .ck.done .ck-sum{max-height:80px}
+        .ck-sum-inner{padding:0 20px 14px 60px;font-size:13px;color:#444}
+
+        /* FORM */
+        .fg{position:relative;margin-bottom:10px}
+        .fr{display:flex;gap:8px}.fr .fg{flex:1}.fr .fg.sm{flex:0 0 100px}
+        .fi{width:100%;padding:14px 12px 4px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff;outline:none;transition:border-color .15s;color:#1a1a1a;font-family:inherit}
+        .fi:focus{border-color:#1a1a1a}
+        .fi::placeholder{color:transparent}
+        .fl{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;color:#999;pointer-events:none;transition:all .15s;background:#fff;padding:0 3px}
+        .fi:focus+.fl,.fi:not(:placeholder-shown)+.fl{top:0;font-size:10px;color:#666}
+        .fi.filled+.fl,.fi:disabled+.fl{top:0;font-size:10px;color:#666}
+        .fi.ic{padding-left:34px}
+        .fi-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#bbb}
+        .fg.has-icon .fl{left:34px}
+        .fi.ic:focus~.fl,.fi.ic:not(:placeholder-shown)~.fl,.fi.ic.filled~.fl{left:12px;top:0;font-size:10px;color:#666;transform:translateY(-50%)}
+        .fi:disabled{background:#f9f9f9;color:#444}
+        select.fi{padding:13px 32px 3px 12px;-webkit-appearance:none;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+        select.fi+.fl{top:0;font-size:10px;color:#666}
+        .cg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cg .fg{margin-bottom:0}
+        /* Validation */
+        .fg.valid .fi{border-color:#2E7D32}.fg.error .fi{border-color:#E30613}
+        .fg.valid::after,.fg.error::after{position:absolute;right:10px;top:12px;pointer-events:none;font-size:13px;z-index:2;animation:vpop .2s ease}
+        .fg.valid::after{content:'\2713';color:#2E7D32;font-weight:700}
+        .fg.error::after{content:'\2715';color:#E30613;font-weight:700}
+        .val-msg{display:none;font-size:11px;color:#E30613;padding:2px 0 0 4px}.fg.error .val-msg{display:block}
+        @keyframes vpop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+        /* Login prompt */
+        .lp{display:none;padding:10px 12px;background:#f7f7f7;border:1px solid #e5e5e5;border-top:none;border-radius:0 0 8px 8px;margin-top:-2px;animation:fadeUp .2s ease}
+        .lp.vis{display:block}
+        .lp-text{font-size:12px;color:#666;margin-bottom:6px}.lp-text strong{color:#1a1a1a}
+        .lp-row{display:flex;gap:6px;align-items:flex-start}
+        .lp-row .fg{flex:1;margin-bottom:0}
+        .lp-btn{padding:10px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+        .lp-skip{font-size:11px;color:#888;text-decoration:underline;cursor:pointer;margin-top:4px;display:inline-block}
+
+        /* FAKTURA */
+        .fak-form{display:none;margin-top:10px;padding:14px;background:#fafafa;border:1px solid #eee;border-radius:8px}
+        .fak-form.vis{display:block}
+        .fak-tog{display:flex;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-bottom:12px}
+        .fak-tog button{flex:1;padding:8px 10px;border:none;background:#fff;font-size:12px;font-weight:500;color:#666;cursor:pointer;transition:all .15s;text-align:center}
+        .fak-tog button:first-child{border-right:1px solid #e0e0e0}
+        .fak-tog button.active{background:#1a1a1a;color:#fff;font-weight:600}
+        .gus-row{display:flex;gap:8px;align-items:flex-start}
+        .gus-row .fg{flex:1}
+        .gus-btn{padding:10px 14px;background:#E30613;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+        .gus-result{margin-top:4px;animation:fadeUp .2s ease}
+        .gus-success{display:flex;align-items:center;gap:6px;font-size:11px;color:#2E7D32;font-weight:600;margin-bottom:8px}
+        .fak-sub{display:none}.fak-sub.vis{display:block}
+
+        /* DELIVERY CARDS */
+        .dc{border:1px solid #e5e5e5;border-radius:10px;margin-bottom:6px;cursor:pointer;overflow:hidden;transition:all .15s}
+        .dc:hover{border-color:#bbb}.dc.sel{border-color:#1a1a1a;border-width:2px;cursor:default}
+        .dc-head{display:flex;align-items:center;padding:11px 12px;gap:10px}
+        .dc-radio{width:18px;height:18px;border:2px solid #ccc;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .15s}
+        .dc.sel .dc-radio{border-color:#1a1a1a}
+        .dc-radio .dot{width:9px;height:9px;border-radius:50%;background:#1a1a1a;transform:scale(0);transition:transform .15s}
+        .dc.sel .dc-radio .dot{transform:scale(1)}
+        .dc-icon{width:38px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;overflow:hidden;font-size:8px;color:#fff}
+        .dc-icon.inpost{background:#FFCB04;color:#1a1a1a}.dc-icon.dpd{background:#DC0032}
+        .dc-icon.inpost-k{background:#FF6600}.dc-icon.pocztex{background:#DC143C}
+        .dc-icon.salon-i{background:none;font-size:20px;color:#1a1a1a}
+        .dc-info{flex:1;min-width:0}
+        .dc-info .nm{font-size:13px;font-weight:600;display:block}.dc-info .sub{font-size:11px;color:#888;display:block}
+        .dc-price{font-size:13px;font-weight:700;white-space:nowrap}
+        .dc-exp{max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
+        .dc.sel .dc-exp{max-height:800px}
+        .dc-exp-inner{padding:0 12px 12px;border-top:1px solid #eee}
+        .dc.sel .dc-exp-inner{padding-top:12px}
+
+        /* Paczkomat map */
+        .pm-map{width:100%;height:240px;background:#f0f0f0;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;border:2px dashed #ccc;transition:all .15s;position:relative;overflow:hidden}
+        .pm-map:hover{border-color:#999;background:#e8e8e8}
+        .pm-map .pm-map-icon{font-size:28px}.pm-map .pm-map-text{font-size:13px;color:#666;font-weight:500}.pm-map .pm-map-sub{font-size:11px;color:#999}
+        .pm-selected{display:none;animation:fadeUp .2s ease}.pm-selected.vis{display:block}
+        .pm-box{background:#f9f9f9;border-radius:8px;padding:10px 12px}
+        .pm-box .pm-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px}
+        .pm-box .pm-id{font-weight:700;font-size:14px;margin-top:1px}.pm-box .pm-addr{font-size:12px;color:#444;margin-top:1px}.pm-box .pm-hint{font-size:11px;color:#999;font-style:italic;margin-top:1px}
+        .ch-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#1a1a1a;text-decoration:underline;margin-top:6px;cursor:pointer}
+
+        /* Courier form */
+        .cour-form{padding-top:4px}.cour-form .cour-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+
+        /* Salon list */
+        .salon-list{display:flex;flex-direction:column}
+        .salon-radio{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .1s;border-radius:6px}
+        .salon-radio:last-child{border-bottom:none}.salon-radio:hover{background:#fafafa}.salon-radio.sel{background:#E8F5E9}
+        .salon-rb{width:16px;height:16px;border:2px solid #ccc;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .15s}
+        .salon-radio.sel .salon-rb{border-color:#2E7D32}
+        .salon-rb .sdot{width:8px;height:8px;border-radius:50%;background:#2E7D32;transform:scale(0);transition:transform .15s}
+        .salon-radio.sel .salon-rb .sdot{transform:scale(1)}
+        .salon-radio .sr-info{flex:1}.salon-radio .sr-name{font-size:12px;font-weight:600}
+        .salon-radio .sr-detail{display:none}.salon-radio.sel .sr-detail{display:block}
+        .salon-radio .sr-addr{font-size:11px;color:#666}.salon-radio .sr-hours{font-size:10px;color:#999}
+        .salon-radio .sr-check{color:#2E7D32;font-size:14px;opacity:0;transition:opacity .15s;flex-shrink:0}
+        .salon-radio.sel .sr-check{opacity:1}
+
+        /* PAYMENT CARDS */
+        .pc{border:1px solid #e5e5e5;border-radius:10px;margin-bottom:5px;cursor:pointer;transition:border-color .15s;overflow:hidden}
+        .pc:hover{border-color:#bbb}.pc.sel{border-color:#1a1a1a;border-width:2px}
+        .pc-head{display:flex;align-items:center;padding:9px 12px;gap:10px}
+        .pc-radio{width:16px;height:16px;border:2px solid #ccc;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+        .pc.sel .pc-radio{border-color:#1a1a1a}
+        .pc-radio .dot{width:8px;height:8px;border-radius:50%;background:#1a1a1a;transform:scale(0);transition:transform .15s}
+        .pc.sel .pc-radio .dot{transform:scale(1)}
+        .pi{width:32px;height:20px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;flex-shrink:0;color:#fff}
+        .pi.visa{background:linear-gradient(135deg,#1A1F71,#2B3990)}.pi.gpay{background:#fff;border:1px solid #ddd;color:#4285F4;font-size:11px}
+        .pi.przelew{background:#2E7D32;font-size:12px}.pi.blik{background:#1a1a1a;font-size:10px;font-weight:900}
+        .pi.raty{background:#E30613}.pi.pobr{background:#555;font-size:10px}.pi.trad{background:#444;font-size:11px}
+        .pc-info .nm{font-size:12px;font-weight:500}.pc-info .sub{font-size:10px;color:#888}
+        .gpay-exp{max-height:0;overflow:hidden;transition:max-height .25s}
+        .pc.sel .gpay-exp{max-height:50px}
+        .gpay-hint{padding:6px 12px;border-top:1px solid #eee;font-size:11px;color:#4CAF50;display:flex;align-items:center;gap:5px}
+
+        /* FINAL SECTION */
+        .cb-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;cursor:pointer}
+        .cb-row input[type="checkbox"]{width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#1a1a1a}
+        .cb-text{font-size:12px;color:#444;line-height:1.5}.cb-text a{color:#1a1a1a;text-decoration:underline}.cb-text strong{font-weight:600}
+        .more-consent{font-size:12px;color:#888;text-decoration:underline;cursor:pointer;margin-top:4px;display:inline-block}
+        .more-panel{max-height:0;overflow:hidden;transition:max-height .3s}.more-panel.vis{max-height:500px}
+        .more-panel-inner{padding-top:10px}
+        .consent-desc{font-size:11px;color:#666;line-height:1.5;margin-bottom:10px}
+        .mkt-cb{accent-color:#1a1a1a}
+
+        /* FLOAT BAR */
+        .float-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid #e0e0e0;box-shadow:0 -2px 12px rgba(0,0,0,.08);animation:slideUp .3s ease}
+        .float-bar-inner{max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;gap:16px}
+        .fb-progress{display:flex;gap:5px;align-items:center}
+        .fb-dot{width:8px;height:8px;border-radius:50%;background:#ddd;transition:background .2s}
+        .fb-dot.done{background:#2E7D32}.fb-dot.active{background:#1a1a1a}
+        .fb-total{font-size:13px;color:#666}.fb-total b{font-size:17px;color:#1a1a1a;display:block;line-height:1.2}
+        .fb-cta{padding:12px 28px;background:#E30613;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;transition:background .15s;white-space:nowrap;flex-shrink:0}
+        .fb-cta:hover{background:#c70511}
+        @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+        /* CONFIRMATION */
+        .conf-hero{text-align:center;padding:48px 20px 32px}
+        .conf-check{width:72px;height:72px;border-radius:50%;background:#E8F5E9;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;animation:confPop .4s cubic-bezier(.2,.8,.4,1.2)}
+        .conf-check svg{width:36px;height:36px;color:#2E7D32}
+        @keyframes confPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+        .conf-hero h1{font-size:24px;font-weight:700;margin-bottom:6px}
+        .conf-hero .conf-nr{font-size:14px;color:#666}.conf-hero .conf-nr a{color:#1a1a1a;font-weight:600}
+        .conf-hero .conf-status{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#2E7D32;font-weight:600;margin-top:12px;background:#E8F5E9;padding:6px 16px;border-radius:20px}
+        .conf-body{max-width:600px;margin:0 auto;padding:0 24px 64px}
+        .conf-card{border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;margin-bottom:14px}
+        .conf-card-head{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:12px 18px 8px}
+        .conf-card-body{padding:0 18px 14px}
+        .conf-prod{display:flex;gap:10px;align-items:center;padding:6px 0}
+        .conf-prod:not(:last-child){border-bottom:1px solid #f0f0f0}
+        .conf-prod .cp-thumb{width:40px;height:40px;background:#f5f5f5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .conf-prod .cp-info{flex:1}.conf-prod .cp-name{font-size:12px;font-weight:500}.conf-prod .cp-qty{font-size:10px;color:#888}
+        .conf-prod .cp-price{font-size:13px;font-weight:700;flex-shrink:0}
+        .conf-detail-row{display:flex;justify-content:space-between;font-size:12px;color:#444;padding:5px 0}
+        .conf-detail-row:not(:last-child){border-bottom:1px solid #f5f5f5}
+        .conf-detail-row .cdr-label{color:#888}.conf-detail-row .cdr-val{font-weight:600}
+        .conf-total-row{display:flex;justify-content:space-between;font-size:17px;font-weight:700;padding:14px 18px;border-top:2px solid #1a1a1a}
+        .conf-actions{display:flex;gap:10px;justify-content:center;margin-top:20px}
+        .conf-btn{padding:11px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
+        .conf-btn.primary{background:#E30613;color:#fff;border:none}.conf-btn.primary:hover{background:#c70511}
+        .conf-btn.secondary{background:#fff;color:#1a1a1a;border:1px solid #ddd}.conf-btn.secondary:hover{border-color:#999}
+
+        .gd{width:6px;height:6px;background:#4CAF50;border-radius:50%;display:inline-block}
+
+        @media(max-width:600px){.cg{grid-template-columns:1fr}.flow{padding:12px 16px 24px}.hd,.ob-row,.float-bar-inner{padding-left:16px;padding-right:16px}.ck-b-inner{padding:0 14px 14px}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hd">
+    <a class="logo" href="#">cyfr<span style="position:relative;">o<span style="position:absolute;top:-7px;right:-1px;font-size:11px;">&#176;</span></span>we.pl</a>
+    <div class="hd-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Bezpieczne zakupy</div>
+</header>
+
+<div class="view active" id="view-checkout">
+
+<!-- ORDER BAR -->
+<div class="ob" id="ob" onclick="this.classList.toggle('open')">
+    <div class="ob-row">
+        <div class="ob-left"><b>Moje zamówienie (2)</b> <span class="ob-chev">&#9662;</span></div>
+        <div class="ob-price" id="ob-total">1 025 zł</div>
+    </div>
+    <div class="ob-detail"><div class="ob-detail-inner">
+        <div class="ob-prod"><div class="ob-thumb">&#127890;</div><div class="pn">Plecak Lowepro Tahoe BP 150 czarny <span style="color:#888;font-weight:400">× 3</span></div><div class="pp">837 zł</div></div>
+        <div class="ob-prod"><div class="ob-thumb">&#128247;</div><div class="pn">Pasek PEAKDESIGN CUFF v3 czarny <span style="color:#888;font-weight:400">× 1</span></div><div class="pp">188 zł</div></div>
+    </div></div>
+</div>
+
+<div class="flow">
+
+<!-- ① DOSTAWA -->
+<div class="ck active" id="sec-delivery">
+    <div class="ck-h" onclick="editSection('delivery')"><div class="ck-num">1</div><div class="ck-title">Dostawa</div><span class="ck-status"></span><a class="ck-edit">Zmień</a></div>
+    <div class="ck-b"><div class="ck-b-inner">
+        <div class="dc" data-m="paczkomat" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost" style="font-size:6px;line-height:1;text-align:center"><b>InPost</b><br><span style="font-size:5px;background:#E30613;color:#fff;padding:0 2px;border-radius:1px">24/7</span></div><div class="dc-info"><span class="nm">InPost Paczkomat 24/7</span><span class="sub">1–2 dni robocze</span></div><span class="dc-price">14 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
+            <div class="pm-map" id="pm-map" onclick="event.stopPropagation();openPaczkomatMap()"><div class="pm-map-icon">&#128205;</div><div class="pm-map-text">Wybierz paczkomat na mapie</div><div class="pm-map-sub">Kliknij, aby otworzyć mapę InPost</div></div>
+            <div class="pm-selected" id="pm-selected"><div class="pm-box"><div class="pm-label">Wybrany paczkomat</div><div class="pm-id" id="pm-sel-id"></div><div class="pm-addr" id="pm-sel-addr"></div><div class="pm-hint" id="pm-sel-hint"></div></div><a class="ch-link" onclick="event.stopPropagation();openPaczkomatMap()">Zmień paczkomat</a></div>
+        </div></div></div>
+        <div class="dc" data-m="kurier-dpd" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon dpd" style="font-size:8px"><b>dpd</b></div><div class="dc-info"><span class="nm">Kurier DPD</span><span class="sub">1 dzień roboczy</span></div><span class="dc-price">15 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko / firma</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div></div></div></div></div>
+        <div class="dc" data-m="kurier-inpost" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost-k" style="font-size:6px;line-height:1;text-align:center"><b>InPost</b><br><span style="font-size:5px;background:#1a1a1a;color:#fff;padding:0 2px;border-radius:1px">Kurier</span></div><div class="dc-info"><span class="nm">Kurier InPost</span><span class="sub">1 dzień roboczy</span></div><span class="dc-price">17 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko / firma</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div></div></div></div></div>
+        <div class="dc" data-m="kurier-pocztex" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon pocztex" style="font-size:7px"><b>PP</b></div><div class="dc-info"><span class="nm">Kurier Pocztex</span><span class="sub">1 dzień roboczy</span></div><span class="dc-price">19 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko / firma</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div></div></div></div></div>
+        <div class="dc salon" data-m="salon" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon salon-i">&#128722;</div><div class="dc-info"><span class="nm">Odbiór w salonie</span><span class="sub">Gdańsk, Katowice, Kraków, Łódź, Poznań, Warszawa</span></div><span class="dc-price">0 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
+            <div class="salon-list" id="salon-list">
+                <div class="salon-radio" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Gdańsk</div><div class="sr-detail"><div class="sr-addr">ul. Łostowicka 25A</div><div class="sr-hours">pon–pt 10–19 | sob 10–15</div></div></div><div class="sr-check">&#10003;</div></div>
+                <div class="salon-radio" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Katowice</div><div class="sr-detail"><div class="sr-addr">ul. Chorzowska 107</div><div class="sr-hours">pon–pt 10–19 | sob 10–15</div></div></div><div class="sr-check">&#10003;</div></div>
+                <div class="salon-radio" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Kraków</div><div class="sr-detail"><div class="sr-addr">ul. Pawia 5 (Galeria Krakowska)</div><div class="sr-hours">pon–sob 10–21 | ndz 10–20</div></div></div><div class="sr-check">&#10003;</div></div>
+                <div class="salon-radio" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Łódź</div><div class="sr-detail"><div class="sr-addr">ul. Piłsudskiego 15/23 (Manufaktura)</div><div class="sr-hours">pon–sob 10–21 | ndz 10–20</div></div></div><div class="sr-check">&#10003;</div></div>
+                <div class="salon-radio" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Poznań</div><div class="sr-detail"><div class="sr-addr">ul. Półwiejska 42</div><div class="sr-hours">pon–pt 10–19 | sob 10–15</div></div></div><div class="sr-check">&#10003;</div></div>
+                <div class="salon-radio" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Warszawa</div><div class="sr-detail"><div class="sr-addr">ul. Marszałkowska 27/35</div><div class="sr-hours">pon–pt 10–19 | sob 10–15</div></div></div><div class="sr-check">&#10003;</div></div>
+            </div>
+        </div></div></div>
+    </div></div>
+    <div class="ck-sum"><div class="ck-sum-inner" id="sum-delivery"></div></div>
+</div>
+
+<!-- ② TWOJE DANE -->
+<div class="ck locked" id="sec-data">
+    <div class="ck-h" onclick="editSection('data')"><div class="ck-num">2</div><div class="ck-title">Twoje dane</div><span class="ck-status"></span><a class="ck-edit">Zmień</a></div>
+    <div class="ck-b"><div class="ck-b-inner">
+        <div class="cg">
+            <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie"><label class="fl">Imię*</label><span class="val-msg"></span></div>
+            <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-nazwisko"><label class="fl">Nazwisko*</label><span class="val-msg"></span></div>
+            <div class="fg has-icon"><input type="email" class="fi ic" placeholder=" " id="inp-email" oninput="checkEmail(this)"><span class="fi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><label class="fl">E-mail*</label><span class="val-msg"></span></div>
+            <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel"><label class="fl">Telefon*</label><span class="val-msg"></span></div>
+        </div>
+        <div class="lp" id="login-prompt">
+            <div class="lp-text">Masz konto jako <strong id="lp-email"></strong>. Zaloguj się!</div>
+            <div class="lp-row"><div class="fg"><input type="password" class="fi" placeholder=" " id="lp-pass"><label class="fl">Hasło</label></div><button type="button" class="lp-btn" onclick="doLogin()">Zaloguj</button></div>
+            <a class="lp-skip" onclick="dismissLogin()">Bez logowania</a>
+        </div>
+        <div style="margin-top:6px"><div class="cb-row"><input type="checkbox" id="fak-check" onchange="toggleFak()"><label class="cb-text" for="fak-check"><strong>Chcę fakturę</strong></label></div>
+        <div class="fak-form" id="fak-form">
+            <div class="fak-tog"><button type="button" class="active" data-ft="firma" onclick="setFakType('firma')">Na firmę</button><button type="button" data-ft="osoba" onclick="setFakType('osoba')">Na osobę</button></div>
+            <div class="fg"><select class="fi" id="fak-kraj" onchange="onKrajChange()"><option value="PL" selected>Polska</option><option value="DE">Niemcy</option><option value="CZ">Czechy</option><option value="OTHER">Inny kraj...</option></select><label class="fl">Kraj</label></div>
+            <div class="fak-sub vis" id="fak-firma-pl"><div class="gus-row"><div class="fg" style="margin-bottom:0"><input type="text" class="fi" placeholder=" " id="fak-nip-pl"><label class="fl">NIP*</label></div><button type="button" class="gus-btn" onclick="fetchGUS()" id="gus-btn">Pobierz z GUS</button></div><div id="gus-result" style="display:none"><div class="gus-result"><div class="gus-success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dane pobrane z GUS</div><div class="fg"><input type="text" class="fi filled" value="Cyfrowe.pl Sp. z o.o." disabled placeholder=" " id="gus-firma"><label class="fl">Nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi filled" value="Łostowicka" disabled placeholder=" " id="gus-ulica"><label class="fl">Ulica</label></div><div class="fg sm"><input type="text" class="fi filled" value="25A" disabled placeholder=" " id="gus-nrdomu"><label class="fl">Nr domu</label></div><div class="fg sm"><input type="text" class="fi filled" value="" disabled placeholder=" " id="gus-nrmiesz"><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi filled" value="80-121" disabled placeholder=" " id="gus-kod"><label class="fl">Kod poczt.</label></div><div class="fg"><input type="text" class="fi filled" value="Gdańsk" disabled placeholder=" " id="gus-miasto"><label class="fl">Miasto</label></div></div></div></div></div>
+            <div class="fak-sub" id="fak-firma-foreign"><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-vatid"><label class="fl">VAT ID*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-firma"><label class="fl">Nazwa firmy*</label></div><div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-ulica"><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-nrdomu"><label class="fl">Nr domu*</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-kod"><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-miasto"><label class="fl">Miasto*</label></div></div></div>
+            <div class="fak-sub" id="fak-osoba"><div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-imie"><label class="fl">Imię*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-nazwisko"><label class="fl">Nazwisko*</label></div></div><div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fo-ulica"><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-nrdomu"><label class="fl">Nr domu*</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-kod"><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fo-miasto"><label class="fl">Miasto*</label></div></div></div>
+        </div></div>
+        <button type="button" style="width:100%;padding:12px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;margin-top:10px" onclick="completeData()">Dalej</button>
+    </div></div>
+    <div class="ck-sum"><div class="ck-sum-inner" id="sum-data"></div></div>
+</div>
+
+<!-- ③ PLATNOSC -->
+<div class="ck locked" id="sec-payment">
+    <div class="ck-h" onclick="editSection('payment')"><div class="ck-num">3</div><div class="ck-title">Płatność</div><span class="ck-status"></span><a class="ck-edit">Zmień</a></div>
+    <div class="ck-b"><div class="ck-b-inner">
+        <div class="pc" data-p="karta" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi visa">VISA</div><div class="pc-info"><span class="nm">Karta online</span></div></div></div>
+        <div class="pc" data-p="gpay" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi gpay">G</div><div class="pc-info"><span class="nm">Google Pay</span></div></div><div class="gpay-exp"><div class="gpay-hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Dane z konta Google</div></div></div>
+        <div class="pc" data-p="przelew" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi przelew">&#8644;</div><div class="pc-info"><span class="nm">Szybki przelew online</span></div></div></div>
+        <div class="pc" data-p="blik" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi blik">b</div><div class="pc-info"><span class="nm">BLIK</span></div></div></div>
+        <div class="pc" data-p="raty" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi raty">R</div><div class="pc-info"><span class="nm">Raty</span><span class="sub"> · Credit Agricole / Santander</span></div></div></div>
+        <div class="pc" data-p="pobranie" id="pobranie-pc" style="display:none" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi pobr">&#8381;</div><div class="pc-info"><span class="nm">Za pobraniem</span></div></div></div>
+        <div class="pc" data-p="tradycyjny" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi trad">&#9993;</div><div class="pc-info"><span class="nm">Przelew tradycyjny</span></div></div></div>
+    </div></div>
+    <div class="ck-sum"><div class="ck-sum-inner" id="sum-payment"></div></div>
+</div>
+
+<!-- ④ PODSUMOWANIE -->
+<div class="ck locked" id="sec-final">
+    <div class="ck-h"><div class="ck-num">4</div><div class="ck-title">Podsumowanie</div><span class="ck-status"></span></div>
+    <div class="ck-b"><div class="ck-b-inner">
+        <div class="cb-row" style="margin-bottom:12px"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję <a href="#">Regulamin</a>, <a href="#">Zasady Sprzedaży</a> i <a href="#">Politykę Prywatności</a>.</strong></label></div>
+        <a class="more-consent" onclick="document.getElementById('more-panel').classList.toggle('vis')">Więcej zgód marketingowych</a>
+        <div class="more-panel" id="more-panel"><div class="more-panel-inner">
+            <div class="consent-desc">Wyrażam zgodę na otrzymywanie informacji handlowych od Cyfrowe.pl za pośrednictwem zaznaczonych kanałów (art. 6 ust. 1 lit. a RODO).</div>
+            <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">E-mail</label></div>
+            <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">Telefon</label></div>
+            <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">WhatsApp / SMS</label></div>
+        </div></div>
+        <button type="button" style="width:100%;padding:14px;background:#E30613;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;margin-top:16px;transition:background .15s" onclick="submitOrder()" onmouseover="this.style.background='#c70511'" onmouseout="this.style.background='#E30613'">Kupuję i płacę</button>
+        <div style="text-align:center;font-size:10px;color:#bbb;margin-top:8px">Klikając powyżej potwierdzasz zamówienie z obowiązkiem zapłaty</div>
+    </div></div>
+</div>
+
+</div><!-- /flow -->
+
+<!-- FLOAT BAR -->
+<div class="float-bar" id="float-bar">
+    <div class="float-bar-inner">
+        <div class="fb-progress"><div class="fb-dot active" id="fd1"></div><div class="fb-dot" id="fd2"></div><div class="fb-dot" id="fd3"></div><div class="fb-dot" id="fd4"></div></div>
+        <div class="fb-total">Do zapłaty<b id="fb-total">1 025 zł</b></div>
+        <button class="fb-cta" id="fb-cta" onclick="floatBarAction()">Wybierz dostawę</button>
+    </div>
+</div>
+
+</div><!-- /view-checkout -->
+
+<!-- CONFIRMATION -->
+<div class="view" id="view-confirm">
+    <div class="conf-hero">
+        <div class="conf-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <h1>Zamówienie złożone!</h1>
+        <div class="conf-nr">Numer zamówienia: <a href="#">#1274149</a></div>
+        <div class="conf-status"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Płatność przyjęta</div>
+    </div>
+    <div class="conf-body">
+        <div class="conf-card"><div class="conf-card-head">Zamówione produkty</div><div class="conf-card-body">
+            <div class="conf-prod"><div class="cp-thumb">&#127890;</div><div class="cp-info"><div class="cp-name">Plecak Lowepro Tahoe BP 150 czarny</div><div class="cp-qty">3 szt.</div></div><div class="cp-price">837 zł</div></div>
+            <div class="conf-prod"><div class="cp-thumb">&#128247;</div><div class="cp-info"><div class="cp-name">Pasek PEAKDESIGN CUFF v3 czarny</div><div class="cp-qty">1 szt.</div></div><div class="cp-price">188 zł</div></div>
+        </div></div>
+        <div class="conf-card"><div class="conf-card-head">Szczegóły</div><div class="conf-card-body">
+            <div class="conf-detail-row"><span class="cdr-label">Dostawa</span><span class="cdr-val" id="conf-del-method">—</span></div>
+            <div class="conf-detail-row"><span class="cdr-label">Adres</span><span class="cdr-val" id="conf-del-detail">—</span></div>
+            <div class="conf-detail-row"><span class="cdr-label">Płatność</span><span class="cdr-val" id="conf-pay-method">—</span></div>
+            <div class="conf-detail-row"><span class="cdr-label">E-mail</span><span class="cdr-val" id="conf-email">—</span></div>
+        </div><div class="conf-total-row"><span>Do zapłaty</span><span id="conf-total">1 025 zł</span></div></div>
+        <div style="text-align:center;font-size:12px;color:#666;margin-top:8px">Potwierdzenie wysłane na e-mail.</div>
+        <div class="conf-actions"><a class="conf-btn secondary" href="#">Szczegóły</a><button class="conf-btn primary" onclick="location.reload()">Wróć do sklepu</button></div>
+    </div>
+</div>
+
+<script>
+let selDelivery=null,selPayment=null,fakType='firma',curSection='delivery';
+const basePrice=1025;
+const sections=['delivery','data','payment','final'];
+const delData={'paczkomat':{name:'InPost Paczkomat 24/7',price:14,type:'paczkomat',detail:''},'kurier-dpd':{name:'Kurier DPD',price:15,type:'kurier',detail:''},'kurier-inpost':{name:'Kurier InPost',price:17,type:'kurier',detail:''},'kurier-pocztex':{name:'Kurier Pocztex',price:19,type:'kurier',detail:''},'salon':{name:'Odbiór w salonie',price:0,type:'salon',detail:''}};
+const payNames={'karta':'Karta online','gpay':'Google Pay','przelew':'Szybki przelew','blik':'BLIK','raty':'Raty','pobranie':'Za pobraniem','tradycyjny':'Przelew tradycyjny'};
+const ctaTexts={delivery:'Wybierz dostawę',data:'Dalej',payment:'Wybierz płatność',final:'Kupuję i płacę'};
+
+function switchView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+
+// ===== ACCORDION ENGINE =====
+function setCardState(name,state){
+    const el=document.getElementById('sec-'+name);
+    el.classList.remove('active','done','locked');
+    el.classList.add(state);
+    const st=el.querySelector('.ck-status');
+    if(st){if(state==='done')st.textContent='\u2713';else if(state==='locked')st.textContent='';else st.textContent='';}
+}
+
+function openSection(name){
+    curSection=name;
+    sections.forEach(s=>{
+        const idx=sections.indexOf(s),cur=sections.indexOf(name);
+        if(idx<cur)setCardState(s,'done');
+        else if(idx===cur)setCardState(s,'active');
+        else setCardState(s,'locked');
+    });
+    updateFloatBar();
+    setTimeout(()=>{
+        const el=document.getElementById('sec-'+name);
+        el.scrollIntoView({behavior:'smooth',block:'start'});
+    },100);
+}
+
+function completeSection(name){
+    setCardState(name,'done');
+    const idx=sections.indexOf(name);
+    if(idx<sections.length-1){
+        openSection(sections[idx+1]);
+    }
+}
+
+function editSection(name){
+    const el=document.getElementById('sec-'+name);
+    if(!el.classList.contains('done'))return;
+    openSection(name);
+}
+
+function updateFloatBar(){
+    const dots=document.querySelectorAll('.fb-dot');
+    const cidx=sections.indexOf(curSection);
+    dots.forEach((d,i)=>{d.className='fb-dot';if(i<cidx)d.classList.add('done');else if(i===cidx)d.classList.add('active');});
+    document.getElementById('fb-cta').textContent=ctaTexts[curSection]||'Dalej';
+    // Update total
+    const total=basePrice+(selDelivery?delData[selDelivery].price:0);
+    document.getElementById('fb-total').textContent=total.toLocaleString('pl-PL')+' zł';
+    document.getElementById('ob-total').textContent=total.toLocaleString('pl-PL')+' zł';
+}
+
+function floatBarAction(){
+    if(curSection==='delivery'){
+        // scroll to delivery
+        document.getElementById('sec-delivery').scrollIntoView({behavior:'smooth',block:'start'});
+    } else if(curSection==='data'){
+        completeData();
+    } else if(curSection==='payment'){
+        document.getElementById('sec-payment').scrollIntoView({behavior:'smooth',block:'start'});
+    } else if(curSection==='final'){
+        submitOrder();
+    }
+}
+
+// ===== DELIVERY =====
+function selDel(card){
+    if(card.classList.contains('sel'))return;
+    document.querySelectorAll('.dc').forEach(c=>c.classList.remove('sel'));
+    card.classList.add('sel');selDelivery=card.dataset.m;
+    const d=delData[selDelivery];
+    // Show/hide pobranie
+    document.getElementById('pobranie-pc').style.display=d.type==='kurier'?'block':'none';
+    if(d.type!=='kurier'&&selPayment==='pobranie'){selPayment=null;document.querySelectorAll('.pc').forEach(c=>c.classList.remove('sel'));}
+    // Auto-fill courier
+    if(d.type==='kurier'){setTimeout(()=>{prefillCourierFromFaktura(card);},350);}
+    updateFloatBar();
+    // Auto-complete for non-courier (if details selected)
+    if(d.type==='paczkomat'||d.type==='salon'){
+        // Don't auto-complete yet — need paczkomat/salon selection
+    }
+}
+
+function prefillCourierFromFaktura(card){
+    const imie=document.getElementById('inp-imie')?.value||'';
+    const nazw=document.getElementById('inp-nazwisko')?.value||'';
+    const form=card.querySelector('.cour-form');if(!form)return;
+    const nf=form.querySelector('.cour-name');
+    if(nf&&!nf.value&&(imie||nazw)){nf.value=(imie+' '+nazw).trim();nf.classList.add('filled');}
+}
+
+function selSalon(el){
+    document.querySelectorAll('.salon-radio').forEach(r=>r.classList.remove('sel'));
+    el.classList.add('sel');
+    const name=el.querySelector('.sr-name').textContent;
+    delData['salon'].detail=name;
+    // Auto-complete delivery
+    document.getElementById('sum-delivery').textContent='Odbiór w salonie \u00b7 '+name;
+    setTimeout(()=>completeSection('delivery'),400);
+    updateFloatBar();
+}
+
+function openPaczkomatMap(){setTimeout(()=>selectPaczkomat('WAW31N','Siedmiogrodzka 11, 01-232 Warszawa','Przy markecie Api'),300);}
+function selectPaczkomat(id,addr,hint){
+    document.getElementById('pm-map').style.display='none';
+    document.getElementById('pm-sel-id').textContent=id;
+    document.getElementById('pm-sel-addr').innerHTML=addr;
+    document.getElementById('pm-sel-hint').textContent=hint||'';
+    document.getElementById('pm-selected').classList.add('vis');
+    delData['paczkomat'].detail=id+' \u00b7 '+addr;
+    document.getElementById('sum-delivery').textContent='Paczkomat '+id+' \u00b7 '+addr;
+    updateFloatBar();
+    // Auto-complete delivery
+    setTimeout(()=>completeSection('delivery'),400);
+}
+
+// ===== PAYMENT =====
+function selPay(card){
+    document.querySelectorAll('.pc').forEach(c=>c.classList.remove('sel'));
+    card.classList.add('sel');selPayment=card.dataset.p;
+    document.getElementById('sum-payment').textContent=payNames[selPayment];
+    // Auto-complete payment
+    setTimeout(()=>completeSection('payment'),300);
+}
+
+// ===== DATA SECTION =====
+const valRules={'inp-imie':{test:v=>v.trim().length>=2,msg:'Min. 2 znaki'},'inp-nazwisko':{test:v=>v.trim().length>=2,msg:'Min. 2 znaki'},'inp-email':{test:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),msg:'Podaj poprawny e-mail'},'inp-tel':{test:v=>{const d=v.replace(/\D/g,'');return d.length===9||(d.length===11&&d.startsWith('48'))},msg:'Podaj 9 cyfr'}};
+
+function validateField(inp){
+    const fg=inp.closest('.fg');if(!fg)return true;
+    const rule=valRules[inp.id];if(!rule)return true;
+    if(!inp.value&&!fg.classList.contains('touched'))return true;
+    fg.classList.add('touched');
+    if(rule.test(inp.value)){fg.classList.remove('error');fg.classList.add('valid');const m=fg.querySelector('.val-msg');if(m)m.textContent='';return true;}
+    else{fg.classList.remove('valid');fg.classList.add('error');const m=fg.querySelector('.val-msg');if(m)m.textContent=rule.msg;return false;}
+}
+document.querySelectorAll('#inp-imie,#inp-nazwisko,#inp-email,#inp-tel').forEach(inp=>{
+    inp.addEventListener('blur',()=>validateField(inp));
+    inp.addEventListener('input',()=>{if(inp.closest('.fg').classList.contains('touched'))validateField(inp);});
+});
+
+function completeData(){
+    let ok=true;
+    ['inp-imie','inp-nazwisko','inp-email','inp-tel'].forEach(id=>{
+        const inp=document.getElementById(id);inp.closest('.fg').classList.add('touched');
+        if(!validateField(inp))ok=false;
+    });
+    if(!ok){const fe=document.querySelector('#sec-data .fg.error .fi');if(fe)fe.scrollIntoView({behavior:'smooth',block:'center'});return;}
+    const n=document.getElementById('inp-imie').value+' '+document.getElementById('inp-nazwisko').value;
+    const e=document.getElementById('inp-email').value;
+    document.getElementById('sum-data').textContent=n.trim()+' \u00b7 '+e;
+    completeSection('data');
+}
+
+// ===== FAKTURA =====
+function toggleFak(){document.getElementById('fak-form').classList.toggle('vis',document.getElementById('fak-check').checked);if(fakType==='osoba')syncOsobaName();}
+function setFakType(t){fakType=t;document.querySelectorAll('.fak-tog button').forEach(b=>b.classList.toggle('active',b.dataset.ft===t));updateFakView();if(t==='osoba')syncOsobaName();}
+function onKrajChange(){updateFakView();}
+function updateFakView(){const k=document.getElementById('fak-kraj').value,isPL=k==='PL';document.querySelectorAll('.fak-sub').forEach(s=>s.classList.remove('vis'));if(fakType==='firma'){(isPL?document.getElementById('fak-firma-pl'):document.getElementById('fak-firma-foreign')).classList.add('vis');}else{document.getElementById('fak-osoba').classList.add('vis');}}
+function syncOsobaName(){const i=document.getElementById('inp-imie').value,n=document.getElementById('inp-nazwisko').value;const fi=document.getElementById('fak-os-imie'),fn=document.getElementById('fak-os-nazwisko');if(i){fi.value=i;fi.classList.add('filled');}if(n){fn.value=n;fn.classList.add('filled');}}
+function fetchGUS(){if(!document.getElementById('fak-nip-pl').value.trim()){document.getElementById('fak-nip-pl').focus();return;}document.getElementById('gus-result').style.display='block';const b=document.getElementById('gus-btn');b.textContent='\u2713 Pobrano';b.style.background='#2E7D32';}
+document.getElementById('inp-imie')?.addEventListener('input',()=>{if(fakType==='osoba')syncOsobaName();});
+document.getElementById('inp-nazwisko')?.addEventListener('input',()=>{if(fakType==='osoba')syncOsobaName();});
+
+// ===== EMAIL LOGIN =====
+const knownEmails=['konto@cyfrowe.pl'];let loginDismissed=false;
+function checkEmail(inp){const v=inp.value.trim().toLowerCase();const lp=document.getElementById('login-prompt');if(!loginDismissed&&knownEmails.includes(v)){document.getElementById('lp-email').textContent=v;lp.classList.add('vis');inp.style.borderRadius='8px 8px 0 0';}else{lp.classList.remove('vis');inp.style.borderRadius='8px';}}
+function doLogin(){const lp=document.getElementById('login-prompt');lp.innerHTML='<div style="display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg><span style="font-size:12px;color:#2E7D32;font-weight:600">Zalogowano!</span></div>';const fields={tel:'600123456',imie:'Jan',nazwisko:'Kowalski'};Object.entries(fields).forEach(([k,v])=>{const el=document.getElementById('inp-'+k);if(el){el.value=v;el.classList.add('filled');el.closest('.fg').classList.add('touched');validateField(el);}});setTimeout(()=>{lp.classList.remove('vis');document.getElementById('inp-email').style.borderRadius='8px';},1500);}
+function dismissLogin(){loginDismissed=true;document.getElementById('login-prompt').classList.remove('vis');document.getElementById('inp-email').style.borderRadius='8px';}
+
+// ===== SUBMIT =====
+function submitOrder(){
+    if(!document.getElementById('c-req').checked){document.getElementById('c-req').focus();document.getElementById('c-req').scrollIntoView({behavior:'smooth',block:'center'});return;}
+    const d=delData[selDelivery],c=d.price,t=basePrice+c;
+    document.getElementById('conf-del-method').textContent=d.name;
+    document.getElementById('conf-del-detail').textContent=d.detail||'—';
+    document.getElementById('conf-total').textContent=t.toLocaleString('pl-PL')+' zł';
+    document.getElementById('conf-pay-method').textContent=selPayment?payNames[selPayment]:'—';
+    document.getElementById('conf-email').textContent=document.getElementById('inp-email').value||'—';
+    document.getElementById('float-bar').style.display='none';
+    switchView('view-confirm');
+}
+
+// Init
+updateFloatBar();
+</script>
+</body>
+</html>
