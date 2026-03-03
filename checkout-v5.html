@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyfrowe.pl – Checkout V5 (One Page Optimized)</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #1a1a1a; background: #f5f5f5; line-height: 1.5; }
+        a { color: #1a1a1a; cursor: pointer; }
+        button { cursor: pointer; font-family: inherit; }
+
+        /* ===== FRAME ===== */
+        .frame { max-width: 1100px; margin: 0 auto; background: #fff; min-height: 100vh; }
+        .ck-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid #e0e0e0; }
+        .logo { font-size: 22px; font-weight: 700; letter-spacing: -.5px; border: 2px solid #1a1a1a; padding: 4px 12px; line-height: 1.2; text-decoration: none; color: #1a1a1a; }
+        .login-link { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: #1a1a1a; font-size: 11px; }
+        .login-link svg { width: 22px; height: 22px; }
+
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* ===== CHECKOUT LAYOUT ===== */
+        .ck-body { display: flex; gap: 32px; padding: 0 32px 64px; align-items: flex-start; }
+        .ck-main { flex: 1; min-width: 0; }
+        .ck-side { width: 310px; flex-shrink: 0; position: sticky; top: 20px; }
+        .ck-title { font-size: 22px; font-weight: 700; padding: 24px 32px 0; }
+
+        .sec-head { font-size: 18px; font-weight: 700; padding: 24px 0 16px; }
+        .sec-head:first-child { padding-top: 0; }
+
+        /* ===== FORM FIELDS ===== */
+        .fg { position: relative; margin-bottom: 12px; }
+        .fr { display: flex; gap: 10px; }
+        .fr .fg { flex: 1; }
+        .fr .fg.sm { flex: 0 0 110px; }
+        .fi { width: 100%; padding: 15px 12px 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background: #fff; outline: none; transition: border-color .15s; color: #1a1a1a; font-family: inherit; }
+        .fi:focus { border-color: #1a1a1a; }
+        .fi::placeholder { color: transparent; }
+        .fl { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: #999; pointer-events: none; transition: all .15s; background: #fff; padding: 0 3px; }
+        .fi:focus + .fl, .fi:not(:placeholder-shown) + .fl { top: 0; font-size: 10px; color: #666; }
+        .fi.ic { padding-left: 36px; }
+        .fi-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #bbb; }
+        .fg.has-icon .fl { left: 36px; }
+        .fi.ic:focus ~ .fl, .fi.ic:not(:placeholder-shown) ~ .fl, .fi.ic.filled ~ .fl { left: 12px; top: 0; font-size: 10px; color: #666; transform: translateY(-50%); }
+        .fi.filled + .fl, .fi:disabled + .fl { top: 0; font-size: 10px; color: #666; }
+        .fi:disabled { background: #f9f9f9; color: #444; }
+        /* ===== INLINE VALIDATION ===== */
+        .fg.valid .fi { border-color: #2E7D32; }
+        .fg.error .fi { border-color: #E30613; }
+        .fg.valid::after, .fg.error::after { position: absolute; right: 12px; top: 13px; pointer-events: none; font-size: 14px; z-index: 2; animation: valPop .25s ease; }
+        .fg.valid::after { content: '\2713'; color: #2E7D32; font-weight: 700; }
+        .fg.error::after { content: '\2715'; color: #E30613; font-weight: 700; }
+        .fg.has-icon.valid::after, .fg.has-icon.error::after { right: 12px; }
+        .val-msg { display: none; font-size: 11px; color: #E30613; padding: 3px 0 0 4px; line-height: 1.3; }
+        .fg.error .val-msg { display: block; }
+        @keyframes valPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* Login prompt */
+        .login-prompt { display: none; margin-top: -2px; padding: 12px 14px; background: #F5F5F5; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 4px 4px; animation: fadeUp .25s ease; }
+        .login-prompt.vis { display: block; }
+        .login-prompt .lp-text { font-size: 12px; color: #666; margin-bottom: 8px; }
+        .login-prompt .lp-text strong { color: #1a1a1a; }
+        .login-prompt .lp-row { display: flex; gap: 8px; align-items: flex-start; }
+        .login-prompt .lp-row .fg { flex: 1; margin-bottom: 0; }
+        .login-prompt .lp-btn { padding: 11px 20px; background: #1a1a1a; color: #fff; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+        .login-prompt .lp-btn:hover { background: #333; }
+        .login-prompt .lp-skip { font-size: 12px; color: #888; text-decoration: underline; cursor: pointer; margin-top: 6px; display: inline-block; }
+        select.fi { padding: 14px 32px 4px 12px; -webkit-appearance: none; appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+        select.fi + .fl { top: 0; font-size: 10px; color: #666; }
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .contact-grid .fg { margin-bottom: 0; }
+
+        /* ===== FAKTURA ===== */
+        .fak-form { display: none; margin-top: 12px; padding: 16px; background: #fafafa; border: 1px solid #eee; border-radius: 6px; }
+        .fak-form.vis { display: block; }
+        .fak-type-toggle { display: flex; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
+        .fak-type-btn { flex: 1; padding: 9px 12px; border: none; background: #fff; font-size: 12px; font-weight: 500; color: #666; cursor: pointer; transition: all .15s; text-align: center; }
+        .fak-type-btn:first-child { border-right: 1px solid #e0e0e0; }
+        .fak-type-btn.active { background: #1a1a1a; color: #fff; font-weight: 600; }
+        .fak-type-btn:hover:not(.active) { background: #f5f5f5; }
+        .gus-row { display: flex; gap: 10px; align-items: flex-start; }
+        .gus-row .fg { flex: 1; }
+        .gus-btn { padding: 11px 18px; background: #E30613; color: #fff; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+        .gus-btn:hover { background: #c70511; }
+        .gus-result { margin-top: 4px; animation: fadeUp .25s ease; }
+        .gus-success { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #2E7D32; font-weight: 600; margin-bottom: 10px; }
+        .fak-sub { display: none; }
+        .fak-sub.vis { display: block; }
+
+        /* ===== DELIVERY CARDS ===== */
+        .dc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 6px; transition: border-color .15s; cursor: pointer; overflow: hidden; }
+        .dc:hover { border-color: #bbb; }
+        .dc.sel { border-color: #1a1a1a; border-width: 2px; cursor: default; }
+        .dc-head { display: flex; align-items: center; padding: 12px 14px; gap: 12px; }
+        .dc-radio { width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color .15s; }
+        .dc.sel .dc-radio { border-color: #1a1a1a; }
+        .dc-radio .dot { width: 10px; height: 10px; border-radius: 50%; background: #1a1a1a; transform: scale(0); transition: transform .15s; }
+        .dc.sel .dc-radio .dot { transform: scale(1); }
+        .dc-icon { width: 42px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; overflow: hidden; font-size: 9px; color: #fff; }
+        .dc-icon.inpost { background: #FFCB04; color: #1a1a1a; } .dc-icon.dpd { background: #DC0032; }
+        .dc-icon.inpost-k { background: #FF6600; } .dc-icon.pocztex { background: #DC143C; }
+        .dc-icon.salon-i { background: none; font-size: 22px; color: #1a1a1a; }
+        .dc-info { flex: 1; min-width: 0; }
+        .dc-info .nm { font-size: 14px; font-weight: 600; display: block; }
+        .dc-info .sub { font-size: 11px; color: #888; display: block; margin-top: 1px; }
+        .dc-price { font-size: 14px; font-weight: 700; white-space: nowrap; }
+        .dc-exp { max-height: 0; overflow: hidden; transition: max-height .35s cubic-bezier(.4,0,.2,1); }
+        .dc.sel .dc-exp { max-height: 800px; }
+        .dc-exp-inner { padding: 0 14px 14px; border-top: 1px solid #eee; }
+        .dc.sel .dc-exp-inner { padding-top: 14px; }
+        .pm-box { background: #f9f9f9; border-radius: 6px; padding: 12px 14px; }
+        .pm-box .pm-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+        .pm-box .pm-id { font-weight: 700; font-size: 15px; margin-top: 2px; }
+        .pm-box .pm-addr { font-size: 13px; color: #444; margin-top: 2px; }
+        .pm-box .pm-hint { font-size: 12px; color: #999; font-style: italic; margin-top: 2px; }
+        .ch-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #1a1a1a; text-decoration: underline; margin-top: 8px; cursor: pointer; }
+        .ch-link svg { width: 12px; height: 12px; }
+        /* Paczkomat map placeholder */
+        .pm-map { width: 100%; height: 280px; background: #f0f0f0; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border: 2px dashed #ccc; transition: all .15s; position: relative; overflow: hidden; }
+        .pm-map:hover { border-color: #999; background: #e8e8e8; }
+        .pm-map .pm-map-icon { font-size: 32px; }
+        .pm-map .pm-map-text { font-size: 13px; color: #666; font-weight: 500; }
+        .pm-map .pm-map-sub { font-size: 11px; color: #999; }
+        .pm-selected { display: none; animation: fadeUp .25s ease; }
+        .pm-selected.vis { display: block; }
+        .cour-form { padding-top: 4px; }
+        .cour-form .cour-label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+
+        /* Salon radio list */
+        .salon-list { display: flex; flex-direction: column; gap: 0; }
+        .salon-radio { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background .1s; border-radius: 4px; }
+        .salon-radio:last-child { border-bottom: none; }
+        .salon-radio:hover { background: #fafafa; }
+        .salon-radio.sel { background: #E8F5E9; }
+        .salon-rb { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color .15s; }
+        .salon-radio.sel .salon-rb { border-color: #2E7D32; }
+        .salon-rb .sdot { width: 9px; height: 9px; border-radius: 50%; background: #2E7D32; transform: scale(0); transition: transform .15s; }
+        .salon-radio.sel .salon-rb .sdot { transform: scale(1); }
+        .salon-radio .sr-info { flex: 1; min-width: 0; }
+        .salon-radio .sr-name { font-size: 13px; font-weight: 600; }
+        .salon-radio .sr-detail { display: none; }
+        .salon-radio.sel .sr-detail { display: block; }
+        .salon-radio .sr-addr { font-size: 12px; color: #666; }
+        .salon-radio .sr-hours { font-size: 11px; color: #999; }
+        .salon-radio .sr-check { color: #2E7D32; font-size: 16px; opacity: 0; transition: opacity .15s; flex-shrink: 0; }
+        .salon-radio.sel .sr-check { opacity: 1; }
+
+        /* ===== PAYMENT ===== */
+        .pc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 5px; cursor: pointer; transition: border-color .15s; overflow: hidden; }
+        .pc:hover { border-color: #bbb; }
+        .pc.sel { border-color: #1a1a1a; border-width: 2px; }
+        .pc-head { display: flex; align-items: center; padding: 10px 14px; gap: 12px; }
+        .pc-radio { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .pc.sel .pc-radio { border-color: #1a1a1a; }
+        .pc-radio .dot { width: 9px; height: 9px; border-radius: 50%; background: #1a1a1a; transform: scale(0); transition: transform .15s; }
+        .pc.sel .pc-radio .dot { transform: scale(1); }
+        .pi { width: 34px; height: 22px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; flex-shrink: 0; color: #fff; }
+        .pi.visa { background: linear-gradient(135deg,#1A1F71,#2B3990); } .pi.gpay { background: #fff; border: 1px solid #ddd; color: #4285F4; font-size: 12px; }
+        .pi.przelew { background: #2E7D32; font-size: 14px; } .pi.blik { background: #1a1a1a; font-size: 11px; font-weight: 900; }
+        .pi.raty { background: #E30613; } .pi.pobr { background: #555; font-size: 11px; }
+        .pi.trad { background: #444; font-size: 12px; } .pi.gift { background: #7B1FA2; font-size: 11px; }
+        .pc-info .nm { font-size: 13px; font-weight: 500; } .pc-info .sub { font-size: 11px; color: #888; }
+        .gpay-exp { max-height: 0; overflow: hidden; transition: max-height .25s; }
+        .pc.sel .gpay-exp { max-height: 50px; }
+        .gpay-hint { padding: 8px 14px; border-top: 1px solid #eee; font-size: 11px; color: #4CAF50; display: flex; align-items: center; gap: 6px; }
+        .gc { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 5px; cursor: pointer; }
+        .gc-head { display: flex; align-items: center; padding: 10px 14px; gap: 12px; }
+        .gc-chk { width: 16px; height: 16px; border: 2px solid #ccc; border-radius: 3px; flex-shrink: 0; }
+
+        /* ===== CONSENTS ===== */
+        .consent-area { padding-top: 0; }
+        .cb-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+        .cb-row input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; accent-color: #1a1a1a; }
+        .cb-text { font-size: 13px; color: #444; line-height: 1.5; }
+        .cb-text a { color: #1a1a1a; text-decoration: underline; }
+        .cb-text strong { font-weight: 600; }
+        .consent-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+        .uwagi-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1a1a1a; text-decoration: underline; cursor: pointer; margin-top: 4px; }
+        .uwagi-toggle svg { width: 12px; height: 12px; }
+        .uwagi-panel { max-height: 0; overflow: hidden; transition: max-height .3s; }
+        .uwagi-panel.vis { max-height: 200px; }
+        .uwagi-panel-inner { padding-top: 12px; }
+
+        /* ===== SIDEBAR ===== */
+        .side-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 12px; background: #fafafa; }
+        .s-row { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 4px; }
+        .s-div { border: 0; border-top: 1px solid #eee; margin: 12px 0; }
+        .s-total { display: flex; justify-content: space-between; align-items: baseline; }
+        .s-total-label { font-size: 16px; font-weight: 700; }
+        .s-total-price { font-size: 22px; font-weight: 700; transition: color .15s; }
+        .s-total-price.flash { color: #E30613; }
+        .cta { width: 100%; padding: 14px; background: #E30613; color: #fff; border: none; border-radius: 4px; font-size: 15px; font-weight: 700; transition: background .15s; margin-top: 16px; }
+        .cta:hover { background: #c70511; }
+        .s-del-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 11px; color: #888; display: none; }
+        .s-del-info.vis { display: block; }
+        .s-del-info .sdi-m { font-weight: 600; color: #1a1a1a; font-size: 12px; }
+        .order-sec { border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
+        .order-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .order-head .chev { font-size: 16px; color: #999; }
+        .order-body { padding: 0 16px 14px; }
+        .ord-prod { display: flex; gap: 10px; align-items: center; }
+        .ord-thumb { width: 52px; height: 52px; background: #f5f5f5; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .ord-prod .pn { font-size: 12px; font-weight: 500; }
+        .ord-prod .av { font-size: 10px; color: #4CAF50; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+        .gd { width: 6px; height: 6px; background: #4CAF50; border-radius: 50%; display: inline-block; }
+
+        /* ===== MAIN CTA (bottom of form) ===== */
+        .main-cta-wrap { padding: 24px 0 0; margin-top: 8px; border-top: 1px solid #e8e8e8; }
+
+        /* ===== CONFIRMATION ===== */
+        .conf-hero { text-align: center; padding: 48px 20px 32px; }
+        .conf-check { width: 72px; height: 72px; border-radius: 50%; background: #E8F5E9; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; animation: confPop .4s cubic-bezier(.2,.8,.4,1.2); }
+        .conf-check svg { width: 36px; height: 36px; color: #2E7D32; }
+        @keyframes confPop { 0% { transform: scale(0); opacity:0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity:1; } }
+        .conf-hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+        .conf-hero .conf-nr { font-size: 14px; color: #666; }
+        .conf-hero .conf-nr a { color: #1a1a1a; font-weight: 600; }
+        .conf-hero .conf-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #2E7D32; font-weight: 600; margin-top: 12px; background: #E8F5E9; padding: 6px 16px; border-radius: 20px; }
+        .conf-body { max-width: 640px; margin: 0 auto; padding: 0 32px 64px; }
+        .conf-card { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+        .conf-card-head { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #888; padding: 14px 20px 10px; }
+        .conf-card-body { padding: 0 20px 16px; }
+        .conf-prod { display: flex; gap: 12px; align-items: center; padding: 8px 0; }
+        .conf-prod:not(:last-child) { border-bottom: 1px solid #f0f0f0; }
+        .conf-prod .cp-thumb { width: 48px; height: 48px; background: #f5f5f5; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .conf-prod .cp-info { flex: 1; min-width: 0; }
+        .conf-prod .cp-name { font-size: 13px; font-weight: 500; }
+        .conf-prod .cp-qty { font-size: 11px; color: #888; }
+        .conf-prod .cp-price { font-size: 14px; font-weight: 700; flex-shrink: 0; }
+        .conf-detail-row { display: flex; justify-content: space-between; font-size: 13px; color: #444; padding: 6px 0; }
+        .conf-detail-row:not(:last-child) { border-bottom: 1px solid #f5f5f5; }
+        .conf-detail-row .cdr-label { color: #888; }
+        .conf-detail-row .cdr-val { font-weight: 600; }
+        .conf-total-row { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; padding: 16px 20px; border-top: 2px solid #1a1a1a; }
+        .conf-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; }
+        .conf-btn { padding: 12px 28px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .15s; }
+        .conf-btn.primary { background: #E30613; color: #fff; border: none; }
+        .conf-btn.primary:hover { background: #c70511; }
+        .conf-btn.secondary { background: #fff; color: #1a1a1a; border: 1px solid #ddd; }
+        .conf-btn.secondary:hover { border-color: #999; }
+
+        /* ===== VALIDATION ALERT ===== */
+        .val-alert { display: none; padding: 12px 16px; background: #FFF3F3; border: 1px solid #E30613; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #E30613; animation: fadeUp .25s ease; }
+        .val-alert.vis { display: flex; align-items: center; gap: 8px; }
+
+        @media (max-width: 800px) {
+            .ck-body { flex-direction: column; }
+            .ck-side { width: 100%; position: static; order: -1; margin-bottom: 16px; }
+            .ck-body { padding: 0 16px 48px; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .ck-title { padding: 20px 16px 0; }
+        }
+        /* Trust badges */
+        .trust-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+        .trust-badge{font-size:10px;color:#888;font-weight:600;display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border:1px solid #e5e5e5;border-radius:4px;background:#fafafa}
+        /* Coupon */
+        .coupon-toggle{font-size:12px;color:#888;text-decoration:underline;cursor:pointer}
+        .coupon-box{max-height:0;overflow:hidden;transition:max-height .3s}.coupon-box.vis{max-height:80px}
+        .coupon-inner{display:flex;gap:8px;align-items:flex-start;padding-top:8px}
+        .coupon-btn{padding:11px 18px;background:#1a1a1a;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+        /* Cross-sell */
+        .xs-prod{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0}
+        .xs-prod:last-child{border-bottom:none}
+        .xs-thumb{width:40px;height:40px;background:#f5f5f5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .xs-info{flex:1}.xs-name{font-size:12px;font-weight:500}.xs-price{font-size:13px;font-weight:700;color:#E30613}
+        .xs-btn{padding:6px 14px;background:#E30613;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;transition:background .15s}
+        @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="frame">
+    <header class="ck-header">
+        <a class="logo" href="#">cyfr<span style="position:relative;">o<span style="position:absolute;top:-7px;right:-1px;font-size:11px;">&#176;</span></span>we.pl</a>
+        <a class="login-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Zaloguj</a>
+    </header>
+
+    <!-- ===== ONE-PAGE CHECKOUT ===== -->
+    <div class="view active" id="view-checkout">
+        <div class="ck-body" style="padding-top:24px;">
+            <div class="ck-main">
+
+                <!-- MOJE DANE -->
+                <div class="sec-head" style="padding-top:16px;">Moje dane</div>
+                <div class="contact-grid">
+                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie" autocomplete="given-name"><label class="fl">Imię*</label><span class="val-msg"></span></div>
+                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-nazwisko" autocomplete="family-name"><label class="fl">Nazwisko*</label><span class="val-msg"></span></div>
+                    <div class="fg has-icon"><input type="email" class="fi ic" placeholder=" " id="inp-email" inputmode="email" autocomplete="email" oninput="checkEmail(this)"><span class="fi-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><label class="fl">E-mail*</label><span class="val-msg"></span></div>
+                    <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel" inputmode="tel" autocomplete="tel"><label class="fl">Telefon*</label><span class="val-msg"></span><div style="font-size:10px;color:#999;padding:2px 0 0 4px">Na ten numer wyślemy status dostawy</div></div>
+                </div>
+                <div class="login-prompt" id="login-prompt">
+                    <div class="lp-text">Masz już konto jako <strong id="lp-email"></strong>. Zaloguj się, aby przyspieszyć zakupy.</div>
+                    <div class="lp-row">
+                        <div class="fg"><input type="password" class="fi" placeholder=" " id="lp-pass"><label class="fl">Hasło</label></div>
+                        <button type="button" class="lp-btn" onclick="doLogin()">Zaloguj</button>
+                    </div>
+                    <a class="lp-skip" onclick="dismissLogin()">Kontynuuj bez logowania</a>
+                </div>
+                <div style="margin-top:8px;">
+                    <div class="cb-row"><input type="checkbox" id="fak-check" onchange="toggleFak()"><label class="cb-text" for="fak-check"><strong>Chcę fakturę</strong></label></div>
+                    <div class="fak-form" id="fak-form">
+                        <div class="fak-type-toggle">
+                            <button type="button" class="fak-type-btn active" data-ft="firma" onclick="setFakType('firma')">Faktura na firmę</button>
+                            <button type="button" class="fak-type-btn" data-ft="osoba" onclick="setFakType('osoba')">Faktura na osobę prywatną</button>
+                        </div>
+                        <div class="fg"><select class="fi" id="fak-kraj" onchange="onKrajChange()"><option value="PL" selected>Polska</option><option value="DE">Niemcy</option><option value="CZ">Czechy</option><option value="SK">Słowacja</option><option value="LT">Litwa</option><option value="FR">Francja</option><option value="GB">Wielka Brytania</option><option value="OTHER">Inny kraj...</option></select><label class="fl">Kraj</label></div>
+                        <div class="fak-sub vis" id="fak-firma-pl">
+                            <div class="gus-row"><div class="fg" style="margin-bottom:0;"><input type="text" class="fi" placeholder=" " id="fak-nip-pl"><label class="fl">NIP*</label></div><button type="button" class="gus-btn" onclick="fetchGUS()" id="gus-btn">Pobierz z GUS</button></div>
+                            <div id="gus-result" style="display:none;"><div class="gus-result">
+                                <div class="gus-success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dane pobrane z GUS</div>
+                                <div class="fg"><input type="text" class="fi filled" value="Cyfrowe.pl Sp. z o.o." disabled placeholder=" " id="gus-firma"><label class="fl">Nazwa firmy</label></div>
+                                <div class="fr"><div class="fg"><input type="text" class="fi filled" value="Łostowicka" disabled placeholder=" " id="gus-ulica"><label class="fl">Ulica</label></div><div class="fg sm"><input type="text" class="fi filled" value="25A" disabled placeholder=" " id="gus-nrdomu"><label class="fl">Nr domu</label></div><div class="fg sm"><input type="text" class="fi filled" value="" disabled placeholder=" " id="gus-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
+                                <div class="fr"><div class="fg sm"><input type="text" class="fi filled" value="80-121" disabled placeholder=" " id="gus-kod"><label class="fl">Kod poczt.</label></div><div class="fg"><input type="text" class="fi filled" value="Gdańsk" disabled placeholder=" " id="gus-miasto"><label class="fl">Miasto</label></div></div>
+                            </div></div>
+                        </div>
+                        <div class="fak-sub" id="fak-firma-foreign">
+                            <div class="fg"><input type="text" class="fi" placeholder=" " id="ff-vatid"><label class="fl">VAT ID*</label></div>
+                            <div class="fg"><input type="text" class="fi" placeholder=" " id="ff-firma"><label class="fl">Nazwa firmy*</label></div>
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-ulica"><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-nrdomu"><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
+                            <div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-kod"><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-miasto"><label class="fl">Miasto*</label></div></div>
+                        </div>
+                        <div class="fak-sub" id="fak-osoba">
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-imie"><label class="fl">Imię*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-nazwisko"><label class="fl">Nazwisko*</label></div></div>
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fo-ulica"><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-nrdomu"><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
+                            <div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-kod"><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fo-miasto"><label class="fl">Miasto*</label></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- METODA DOSTAWY -->
+
+                <div class="sec-head">Metoda dostawy</div>
+
+                <div class="dc" data-m="paczkomat" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#E30613;color:#fff;padding:0 2px;border-radius:1px;">Paczkomaty 24/7</span></div><div class="dc-info"><span class="nm">InPost Paczkomat 24/7</span><span class="sub">dostawa: <b style="color:#2E7D32">śr. 5 marca</b></span></div><span class="dc-price">14 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
+                    <div class="pm-map" id="pm-map" onclick="event.stopPropagation();openPaczkomatMap()">
+                        <div class="pm-map-icon">&#128205;</div>
+                        <div class="pm-map-text">Wybierz paczkomat na mapie</div>
+                        <div class="pm-map-sub">Kliknij, aby otworzyć mapę InPost</div>
+                    </div>
+                    <div class="pm-selected" id="pm-selected">
+                        <div class="pm-box"><div class="pm-label">Wybrany paczkomat</div><div class="pm-id" id="pm-sel-id"></div><div class="pm-addr" id="pm-sel-addr"></div><div class="pm-hint" id="pm-sel-hint"></div></div>
+                        <a class="ch-link" onclick="event.stopPropagation();openPaczkomatMap()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Zmień paczkomat</a>
+                    </div>
+                </div></div></div>
+
+                <div class="dc" data-m="kurier-dpd" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon dpd" style="font-size:9px;"><b>dpd</b></div><div class="dc-info"><span class="nm">Kurier DPD</span><span class="sub">dostawa: <b style="color:#2E7D32">wt. 4 marca</b></span></div><span class="dc-price">15 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+
+                <div class="dc" data-m="kurier-inpost" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost-k" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#1a1a1a;color:#fff;padding:0 2px;border-radius:1px;">Kurier</span></div><div class="dc-info"><span class="nm">Kurier InPost</span><span class="sub">dostawa: <b style="color:#2E7D32">wt. 4 marca</b></span></div><span class="dc-price">17 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+
+                <div class="dc" data-m="kurier-pocztex" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon pocztex" style="font-size:8px;"><b>PP</b></div><div class="dc-info"><span class="nm">Kurier Pocztex</span><span class="sub">dostawa: <b style="color:#2E7D32">wt. 4 marca</b></span></div><span class="dc-price">19 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+
+                <div class="dc salon" data-m="salon" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon salon-i">&#128722;</div><div class="dc-info"><span class="nm">Odbiór w salonie Cyfrowe.pl</span><span class="sub">Gdańsk, Katowice, Kraków, Łódź, Poznań, Warszawa</span><span class="sub">dostawa: <b style="color:#2E7D32">wt. 4 marca</b></span></div><span class="dc-price">0 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
+                    <div class="salon-list" id="salon-list">
+                        <div class="salon-radio" data-salon="gdansk" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Gdańsk</div><div class="sr-detail"><div class="sr-addr">ul. Łostowicka 25A, 80-121 Gdańsk</div><div class="sr-hours">pon–pt 10:00–19:00 | sob 10:00–15:00</div></div></div><div class="sr-check">&#10003;</div></div>
+                        <div class="salon-radio" data-salon="katowice" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Katowice</div><div class="sr-detail"><div class="sr-addr">ul. Chorzowska 107, 40-101 Katowice</div><div class="sr-hours">pon–pt 10:00–19:00 | sob 10:00–15:00</div></div></div><div class="sr-check">&#10003;</div></div>
+                        <div class="salon-radio" data-salon="krakow" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Kraków</div><div class="sr-detail"><div class="sr-addr">ul. Pawia 5 (Galeria Krakowska), 31-154 Kraków</div><div class="sr-hours">pon–sob 10:00–21:00 | ndz 10:00–20:00</div></div></div><div class="sr-check">&#10003;</div></div>
+                        <div class="salon-radio" data-salon="lodz" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Łódź</div><div class="sr-detail"><div class="sr-addr">ul. Piłsudskiego 15/23 (Manufaktura), 90-307 Łódź</div><div class="sr-hours">pon–sob 10:00–21:00 | ndz 10:00–20:00</div></div></div><div class="sr-check">&#10003;</div></div>
+                        <div class="salon-radio" data-salon="poznan" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Poznań</div><div class="sr-detail"><div class="sr-addr">ul. Półwiejska 42, 61-888 Poznań</div><div class="sr-hours">pon–pt 10:00–19:00 | sob 10:00–15:00</div></div></div><div class="sr-check">&#10003;</div></div>
+                        <div class="salon-radio" data-salon="warszawa" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Warszawa</div><div class="sr-detail"><div class="sr-addr">ul. Marszałkowska 27/35, 00-639 Warszawa</div><div class="sr-hours">pon–pt 10:00–19:00 | sob 10:00–15:00</div></div></div><div class="sr-check">&#10003;</div></div>
+                    </div>
+                </div></div></div>
+
+                <!-- METODA PLATNOSCI -->
+
+                <div class="sec-head">Metoda płatności</div>
+                <div class="pc" data-p="karta" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi visa">VISA</div><div class="pc-info"><span class="nm">Karta online</span></div></div></div>
+                <div class="pc" data-p="gpay" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi gpay">G</div><div class="pc-info"><span class="nm">Google Pay</span></div></div><div class="gpay-exp"><div class="gpay-hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Dane zostaną pobrane z konta Google</div></div></div>
+                <div class="pc" data-p="przelew" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi przelew">&#8644;</div><div class="pc-info"><span class="nm">Szybki przelew online</span></div></div></div>
+                <div class="pc" data-p="blik" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi blik">b</div><div class="pc-info"><span class="nm">BLIK</span></div></div></div>
+                <div class="pc" data-p="raty" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi raty">R</div><div class="pc-info"><span class="nm">Raty</span><br><span class="sub">Credit Agricole i Santander</span></div></div></div>
+                <div class="pc" data-p="pobranie" id="pobranie-pc" style="display:none;" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi pobr">&#8381;</div><div class="pc-info"><span class="nm">Za pobraniem</span><br><span class="sub">Płatne przy odbiorze</span></div></div></div>
+                <div class="pc" data-p="tradycyjny" onclick="selPay(this)"><div class="pc-head"><div class="pc-radio"><div class="dot"></div></div><div class="pi trad">&#9993;</div><div class="pc-info"><span class="nm">Przelew tradycyjny</span><br><span class="sub">Posiadamy konto w Santanderze i mBanku</span></div></div></div>
+                <div class="gc" onclick="this.classList.toggle('checked')"><div class="gc-head"><div class="gc-chk"></div><div class="pi gift">&#127873;</div><div class="pc-info"><span class="nm">Karta podarunkowa</span></div></div></div>
+
+                <!-- ZGODY -->
+
+                <div class="sec-head">Zgody</div>
+                <div class="consent-area">
+                    <div class="cb-row"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all">Zaznacz wszystkie</label></div>
+                    <div class="consent-desc">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
+                    <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">E-mail</label></div>
+                    <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">Połączeń telefonicznych</label></div>
+                    <div class="cb-row"><input type="checkbox" class="mkt-cb"><label class="cb-text">WhatsApp/Messenger/SMS</label></div>
+                    <div style="margin-top:16px;"><div class="cb-row"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div></div>
+                </div>
+
+                <!-- UWAGI -->
+
+                <div class="sec-head">Uwagi do zamówienia</div>
+                <div><a class="uwagi-toggle" onclick="document.getElementById('uwagi-panel').classList.toggle('vis')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Dodaj</a><div class="uwagi-panel" id="uwagi-panel"><div class="uwagi-panel-inner"><div class="fg"><textarea class="fi" style="min-height:60px;resize:vertical;padding-top:12px;" placeholder="np. proszę o dokładne zapakowanie..."></textarea></div></div></div></div>
+
+                <!-- KUPON -->
+                <div style="margin-top:16px;"><a class="coupon-toggle" onclick="document.getElementById('coupon-box').classList.toggle('vis')">Masz kod promocyjny?</a>
+                <div class="coupon-box" id="coupon-box"><div class="coupon-inner"><div class="fg" style="margin-bottom:0;flex:1"><input type="text" class="fi" placeholder=" " id="coupon-input"><label class="fl">Kod promocyjny</label></div><button type="button" class="coupon-btn" onclick="applyCoupon()">Zastosuj</button></div></div></div>
+
+                <!-- MAIN CTA -->
+                <div class="main-cta-wrap">
+                    <div class="val-alert" id="val-alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E30613" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="val-alert-msg"></span></div>
+                    <button class="cta" onclick="submitOrder()">Kupuję i płacę</button>
+                    <div class="trust-row">
+                        <span class="trust-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> SSL</span>
+                        <span class="trust-badge">VISA</span>
+                        <span class="trust-badge">Mastercard</span>
+                        <span class="trust-badge">BLIK</span>
+                        <span class="trust-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 14 dni na zwrot</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDEBAR -->
+            <aside class="ck-side">
+                <div class="side-card">
+                    <div class="s-row"><span>Wartość zamówienia</span><span>1 025 zł</span></div>
+                    <div class="s-row"><span>Dostawa</span><span id="sd-del">—</span></div>
+                    <hr class="s-div">
+                    <div class="s-total"><span class="s-total-label">Do zapłaty</span><span class="s-total-price" id="sd-total">1 025 zł</span></div>
+                    <div class="s-del-info" id="sd-info"><div class="sdi-m" id="sdi-method"></div><div id="sdi-detail" style="margin-top:2px;"></div></div>
+                    <button class="cta" onclick="submitOrder()">Kupuję i płacę</button>
+                </div>
+                <div class="order-sec"><div class="order-head" onclick="this.classList.toggle('cl');this.nextElementSibling.style.display=this.classList.contains('cl')?'none':'block'"><span>Moje zamówienie</span><span class="chev">&#8963;</span></div><div class="order-body"><div class="ord-prod"><div class="ord-thumb">&#127890;</div><div><div class="pn">Plecak Lowepro Tahoe BP 150 czarny</div><div class="av"><span class="gd"></span> Wysyłamy w 24h</div></div></div><div class="ord-prod" style="margin-top:8px;"><div class="ord-thumb">&#128247;</div><div><div class="pn">Pasek PEAKDESIGN Pasek na nadgarstek CUFF v3 czarny</div><div class="av"><span class="gd"></span> Wysyłamy w 24h</div></div></div></div></div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- ===== CONFIRMATION ===== -->
+    <div class="view" id="view-confirm">
+        <div class="conf-hero">
+            <div class="conf-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <h1>Zamówienie złożone!</h1>
+            <div class="conf-nr">Numer zamówienia: <a href="#">#1274149</a></div>
+            <div class="conf-status"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Płatność przyjęta</div>
+        </div>
+        <div class="conf-body">
+            <div class="conf-card">
+                <div class="conf-card-head">Zamówione produkty</div>
+                <div class="conf-card-body">
+                    <div class="conf-prod"><div class="cp-thumb">&#127890;</div><div class="cp-info"><div class="cp-name">Plecak Lowepro Tahoe BP 150 czarny</div><div class="cp-qty">3 szt.</div></div><div class="cp-price">837 zł</div></div>
+                    <div class="conf-prod"><div class="cp-thumb">&#128247;</div><div class="cp-info"><div class="cp-name">Pasek PEAKDESIGN Pasek na nadgarstek CUFF v3 czarny</div><div class="cp-qty">1 szt.</div></div><div class="cp-price">188 zł</div></div>
+                </div>
+            </div>
+            <div class="conf-card">
+                <div class="conf-card-head">Szczegóły</div>
+                <div class="conf-card-body">
+                    <div class="conf-detail-row"><span class="cdr-label">Dostawa</span><span class="cdr-val" id="conf-del-method">—</span></div>
+                    <div class="conf-detail-row"><span class="cdr-label">Adres dostawy</span><span class="cdr-val" id="conf-del-detail">—</span></div>
+                    <div class="conf-detail-row"><span class="cdr-label">Płatność</span><span class="cdr-val" id="conf-pay-method">—</span></div>
+                    <div class="conf-detail-row"><span class="cdr-label">E-mail</span><span class="cdr-val" id="conf-email">—</span></div>
+                </div>
+                <div class="conf-total-row"><span>Do zapłaty</span><span id="conf-total">1 025 zł</span></div>
+            </div>
+            <div style="text-align:center;font-size:13px;color:#666;margin-top:8px;">Potwierdzenie zostało wysłane na podany adres e-mail.</div>
+            <!-- ACCOUNT CREATION -->
+            <div class="conf-card" style="background:#f0f7ff;border-color:#b3d4fc">
+                <div class="conf-card-body" style="padding:16px 20px;text-align:center">
+                    <div style="font-size:14px;font-weight:700;margin-bottom:4px">Zapisz swoje dane na następne zakupy</div>
+                    <div style="font-size:12px;color:#666;margin-bottom:10px">Utwórz konto jednym kliknięciem — następnym razem kupujesz szybciej!</div>
+                    <button class="conf-btn primary" onclick="this.innerHTML='✓ Konto utworzone!';this.style.background='#2E7D32';this.disabled=true" style="width:100%">Utwórz konto</button>
+                </div>
+            </div>
+            <!-- CROSS-SELL -->
+            <div class="conf-card">
+                <div class="conf-card-head">Klienci kupili również</div>
+                <div class="conf-card-body">
+                    <div class="xs-prod"><div class="xs-thumb">&#128247;</div><div class="xs-info"><div class="xs-name">Filtr UV Hoya 58mm</div><div class="xs-price">49 zł</div></div><button class="xs-btn" onclick="this.textContent='✓ Dodano';this.style.background='#2E7D32';this.disabled=true">+ Dodaj</button></div>
+                    <div class="xs-prod"><div class="xs-thumb">&#128190;</div><div class="xs-info"><div class="xs-name">Karta SDXC SanDisk 128GB</div><div class="xs-price">79 zł</div></div><button class="xs-btn" onclick="this.textContent='✓ Dodano';this.style.background='#2E7D32';this.disabled=true">+ Dodaj</button></div>
+                </div>
+            </div>
+            <div class="conf-actions">
+                <a class="conf-btn secondary" href="#">Szczegóły zamówienia</a>
+                <button class="conf-btn primary" onclick="switchView('view-checkout')">Wróć do sklepu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selDelivery=null, selPayment=null, fakType='firma';
+const basePrice=1025;
+const delData={
+    'paczkomat':{name:'InPost Paczkomat 24/7',price:14,type:'paczkomat',detail:''},
+    'kurier-dpd':{name:'Kurier DPD',price:15,type:'kurier',detail:'dostawa: wt. 4 marca'},
+    'kurier-inpost':{name:'Kurier InPost',price:17,type:'kurier',detail:'dostawa: wt. 4 marca'},
+    'kurier-pocztex':{name:'Kurier Pocztex',price:19,type:'kurier',detail:'dostawa: wt. 4 marca'},
+    'salon':{name:'Odbiór w salonie Cyfrowe.pl',price:0,type:'salon',detail:''}
+};
+const payNames={'karta':'Karta online','gpay':'Google Pay','przelew':'Szybki przelew online','blik':'BLIK','raty':'Raty','pobranie':'Za pobraniem','tradycyjny':'Przelew tradycyjny'};
+
+function switchView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+
+// DELIVERY
+function selDel(card){
+    if(card.classList.contains('sel'))return;
+    document.querySelectorAll('.dc').forEach(c=>c.classList.remove('sel'));
+    card.classList.add('sel');selDelivery=card.dataset.m;
+    // Show/hide pobranie based on delivery type
+    const d=delData[selDelivery];
+    document.getElementById('pobranie-pc').style.display=d.type==='kurier'?'block':'none';
+    if(d.type!=='kurier'&&selPayment==='pobranie'){selPayment=null;document.querySelectorAll('.pc').forEach(c=>c.classList.remove('sel'));}
+    // Auto-fill courier address
+    if(d.type==='kurier'){
+        setTimeout(()=>{prefillCourierFromFaktura(card);const f=card.querySelector('.cour-form .fi');if(f&&!f.value)f.focus();},380);
+    }
+    updateSidebar();
+}
+
+function prefillCourierFromFaktura(card){
+    const imie=document.getElementById('inp-imie').value;
+    const nazw=document.getElementById('inp-nazwisko').value;
+    const form=card.querySelector('.cour-form');
+    if(!form)return;
+    const nameField=form.querySelector('.cour-name');
+    if(nameField&&!nameField.value&&(imie||nazw)){
+        nameField.value=(imie+' '+nazw).trim();nameField.classList.add('filled');
+    }
+    if(!document.getElementById('fak-check').checked)return;
+    let src={};
+    if(fakType==='firma'){
+        const isPL=document.getElementById('fak-kraj').value==='PL';
+        if(isPL&&document.getElementById('gus-result').style.display!=='none'){
+            src={name:document.getElementById('gus-firma').value,ulica:document.getElementById('gus-ulica').value,nrdomu:document.getElementById('gus-nrdomu').value,nrmiesz:document.getElementById('gus-nrmiesz').value,kod:document.getElementById('gus-kod').value,miasto:document.getElementById('gus-miasto').value};
+        } else if(!isPL){
+            src={name:document.getElementById('ff-firma').value,ulica:document.getElementById('ff-ulica').value,nrdomu:document.getElementById('ff-nrdomu').value,nrmiesz:document.getElementById('ff-nrmiesz').value,kod:document.getElementById('ff-kod').value,miasto:document.getElementById('ff-miasto').value};
+        }
+    } else {
+        src={name:(document.getElementById('fak-os-imie').value+' '+document.getElementById('fak-os-nazwisko').value).trim(),ulica:document.getElementById('fo-ulica').value,nrdomu:document.getElementById('fo-nrdomu').value,nrmiesz:document.getElementById('fo-nrmiesz').value,kod:document.getElementById('fo-kod').value,miasto:document.getElementById('fo-miasto').value};
+    }
+    function fill(sel,val){const el=form.querySelector(sel);if(el&&val&&!el.value){el.value=val;el.classList.add('filled');}}
+    if(src.name)fill('.cour-name',src.name);
+    fill('.cour-ulica',src.ulica);fill('.cour-nrdomu',src.nrdomu);fill('.cour-nrmiesz',src.nrmiesz);fill('.cour-kod',src.kod);fill('.cour-miasto',src.miasto);
+}
+
+function selSalon(el){
+    document.querySelectorAll('.salon-radio').forEach(r=>r.classList.remove('sel'));
+    el.classList.add('sel');
+    const name=el.querySelector('.sr-name').textContent;
+    delData['salon'].detail=name;
+    updateSidebar();
+}
+
+// PAYMENT
+function selPay(card){document.querySelectorAll('.pc').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');selPayment=card.dataset.p;}
+
+// FAKTURA
+function toggleFak(){document.getElementById('fak-form').classList.toggle('vis',document.getElementById('fak-check').checked);if(fakType==='osoba')syncOsobaName();}
+function setFakType(t){fakType=t;document.querySelectorAll('.fak-type-btn').forEach(b=>b.classList.toggle('active',b.dataset.ft===t));updateFakView();if(t==='osoba')syncOsobaName();}
+function onKrajChange(){updateFakView();}
+function updateFakView(){
+    const k=document.getElementById('fak-kraj').value,isPL=k==='PL';
+    document.querySelectorAll('.fak-sub').forEach(s=>s.classList.remove('vis'));
+    if(fakType==='firma'){(isPL?document.getElementById('fak-firma-pl'):document.getElementById('fak-firma-foreign')).classList.add('vis');}
+    else{document.getElementById('fak-osoba').classList.add('vis');}
+}
+function syncOsobaName(){
+    const i=document.getElementById('inp-imie').value,n=document.getElementById('inp-nazwisko').value;
+    const fi=document.getElementById('fak-os-imie'),fn=document.getElementById('fak-os-nazwisko');
+    if(i){fi.value=i;fi.classList.add('filled');}if(n){fn.value=n;fn.classList.add('filled');}
+}
+function fetchGUS(){
+    if(!document.getElementById('fak-nip-pl').value.trim()){document.getElementById('fak-nip-pl').focus();return;}
+    document.getElementById('gus-result').style.display='block';
+    const b=document.getElementById('gus-btn');b.textContent='\u2713 Pobrano';b.style.background='#2E7D32';
+}
+document.getElementById('inp-imie')?.addEventListener('input',()=>{if(fakType==='osoba')syncOsobaName();});
+document.getElementById('inp-nazwisko')?.addEventListener('input',()=>{if(fakType==='osoba')syncOsobaName();});
+
+// SIDEBAR (single)
+function updateSidebar(){
+    if(!selDelivery){document.getElementById('sd-del').textContent='—';document.getElementById('sd-total').textContent=basePrice.toLocaleString('pl-PL')+' zł';document.getElementById('sd-info').classList.remove('vis');return;}
+    const d=delData[selDelivery],c=d.price,t=basePrice+c;
+    document.getElementById('sd-del').textContent=c===0?'0 zł':c+' zł';
+    const el=document.getElementById('sd-total');el.textContent=t.toLocaleString('pl-PL')+' zł';el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),300);
+    document.getElementById('sdi-method').textContent=d.name;document.getElementById('sdi-detail').textContent=d.detail;document.getElementById('sd-info').classList.add('vis');
+}
+
+function toggleAll(cb){const ch=cb.checked;document.querySelectorAll('.mkt-cb').forEach(c=>c.checked=ch);document.getElementById('c-req').checked=ch;}
+
+// EMAIL LOGIN CHECK
+const knownEmails=['konto@cyfrowe.pl'];
+let loginDismissed=false;
+function checkEmail(inp){
+    const v=inp.value.trim().toLowerCase();
+    const lp=document.getElementById('login-prompt');
+    if(!loginDismissed&&knownEmails.includes(v)){
+        document.getElementById('lp-email').textContent=v;
+        lp.classList.add('vis');
+        inp.style.borderRadius='4px 4px 0 0';
+    } else {
+        lp.classList.remove('vis');
+        inp.style.borderRadius='4px';
+    }
+}
+function doLogin(){
+    const lp=document.getElementById('login-prompt');
+    lp.innerHTML='<div style="display:flex;align-items:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg><span style="font-size:13px;color:#2E7D32;font-weight:600;">Zalogowano! Dane zostały uzupełnione.</span></div>';
+    const fields={tel:'600123456',imie:'Jan',nazwisko:'Kowalski'};
+    Object.entries(fields).forEach(([k,v])=>{const el=document.getElementById('inp-'+k);if(el){el.value=v;el.classList.add('filled');el.closest('.fg').classList.add('touched');validateField(el);}});
+    setTimeout(()=>{lp.classList.remove('vis');document.getElementById('inp-email').style.borderRadius='4px';},2000);
+}
+function dismissLogin(){
+    loginDismissed=true;
+    document.getElementById('login-prompt').classList.remove('vis');
+    document.getElementById('inp-email').style.borderRadius='4px';
+}
+
+// PACZKOMAT MAP
+function openPaczkomatMap(){
+    setTimeout(()=>{
+        selectPaczkomat('WAW31N','Siedmiogrodzka 11, 01-232 Warszawa','Przy markecie Api');
+    },300);
+}
+function selectPaczkomat(id,addr,hint){
+    document.getElementById('pm-map').style.display='none';
+    document.getElementById('pm-sel-id').textContent=id;
+    document.getElementById('pm-sel-addr').innerHTML=addr;
+    document.getElementById('pm-sel-hint').textContent=hint||'';
+    document.getElementById('pm-selected').classList.add('vis');
+    delData['paczkomat'].detail=id+' \u00b7 '+addr.replace(/<br>/g,', ');
+    updateSidebar();
+}
+
+// ===== INLINE VALIDATION =====
+const valRules={
+    'inp-imie':    {test:v=>v.trim().length>=2, msg:'Podaj imię (min. 2 znaki)'},
+    'inp-nazwisko':{test:v=>v.trim().length>=2, msg:'Podaj nazwisko (min. 2 znaki)'},
+    'inp-email':   {test:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()), msg:'Podaj poprawny adres e-mail'},
+    'inp-tel':     {test:v=>{const d=v.replace(/\D/g,'');return d.length===9||(d.length===11&&d.startsWith('48'));}, msg:'Podaj 9-cyfrowy numer telefonu'}
+};
+
+function validateField(inp){
+    const fg=inp.closest('.fg');
+    if(!fg)return true;
+    const rule=valRules[inp.id];
+    if(!rule)return true;
+    const val=inp.value;
+    if(!val&&!fg.classList.contains('touched'))return true;
+    fg.classList.add('touched');
+    if(rule.test(val)){
+        fg.classList.remove('error');
+        fg.classList.add('valid');
+        const msg=fg.querySelector('.val-msg');
+        if(msg)msg.textContent='';
+        return true;
+    } else {
+        fg.classList.remove('valid');
+        fg.classList.add('error');
+        const msg=fg.querySelector('.val-msg');
+        if(msg)msg.textContent=rule.msg;
+        return false;
+    }
+}
+
+function validateCourierField(inp){
+    const fg=inp.closest('.fg');
+    if(!fg)return true;
+    fg.classList.add('touched');
+    let msg=fg.querySelector('.val-msg');
+    if(!msg){msg=document.createElement('span');msg.className='val-msg';fg.appendChild(msg);}
+    if(inp.value.trim()){
+        fg.classList.remove('error');fg.classList.add('valid');msg.textContent='';return true;
+    } else {
+        fg.classList.remove('valid');fg.classList.add('error');
+        msg.textContent='To pole jest wymagane';return false;
+    }
+}
+
+// Attach blur + live re-validation handlers
+document.querySelectorAll('#inp-imie,#inp-nazwisko,#inp-email,#inp-tel').forEach(inp=>{
+    inp.addEventListener('blur',()=>validateField(inp));
+    inp.addEventListener('input',()=>{
+        if(inp.closest('.fg').classList.contains('touched'))validateField(inp);
+    });
+});
+
+// ===== FULL VALIDATION (one-page) =====
+function showAlert(msg){
+    const al=document.getElementById('val-alert');
+    document.getElementById('val-alert-msg').textContent=msg;
+    al.classList.add('vis');
+    setTimeout(()=>al.classList.remove('vis'),5000);
+}
+
+function validateAll(){
+    let ok=true;
+    let firstErr=null;
+
+    // 1. Contact fields
+    ['inp-imie','inp-nazwisko','inp-email','inp-tel'].forEach(id=>{
+        const inp=document.getElementById(id);
+        inp.closest('.fg').classList.add('touched');
+        if(!validateField(inp)){ok=false;if(!firstErr)firstErr=inp;}
+    });
+
+    // 2. Delivery selected
+    if(!selDelivery){
+        ok=false;
+        if(!firstErr){const el=document.querySelector('.dc');if(el)firstErr=el;}
+        showAlert('Wybierz metodę dostawy');
+        return false;
+    }
+
+    // 3. Delivery-specific validation
+    if(selDelivery&&delData[selDelivery].type==='kurier'){
+        const card=document.querySelector('.dc.sel');
+        if(card){
+            card.querySelectorAll('.cour-ulica,.cour-nrdomu,.cour-kod,.cour-miasto').forEach(inp=>{
+                if(!validateCourierField(inp)){ok=false;if(!firstErr)firstErr=inp;}
+                if(!inp.dataset.valBound){
+                    inp.dataset.valBound='1';
+                    inp.addEventListener('blur',()=>validateCourierField(inp));
+                    inp.addEventListener('input',()=>{if(inp.closest('.fg').classList.contains('touched'))validateCourierField(inp);});
+                }
+            });
+        }
+    }
+    if(selDelivery==='paczkomat'&&!document.getElementById('pm-selected').classList.contains('vis')){
+        ok=false;if(!firstErr)firstErr=document.getElementById('pm-map');
+        showAlert('Wybierz paczkomat na mapie');
+        return false;
+    }
+    if(selDelivery==='salon'&&!document.querySelector('.salon-radio.sel')){
+        ok=false;if(!firstErr)firstErr=document.getElementById('salon-list');
+        showAlert('Wybierz salon odbioru');
+        return false;
+    }
+
+    // 4. Payment selected
+    if(!selPayment){
+        ok=false;
+        if(!firstErr){const el=document.querySelector('.pc');if(el)firstErr=el;}
+        showAlert('Wybierz metodę płatności');
+        if(firstErr)firstErr.scrollIntoView({behavior:'smooth',block:'center'});
+        return false;
+    }
+
+    // 5. Required consent
+    if(!document.getElementById('c-req').checked){
+        ok=false;
+        if(!firstErr)firstErr=document.getElementById('c-req');
+        showAlert('Zaakceptuj wymagane zgody');
+        if(firstErr)firstErr.scrollIntoView({behavior:'smooth',block:'center'});
+        return false;
+    }
+
+    // Scroll to first error
+    if(!ok&&firstErr){
+        firstErr.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    return ok;
+}
+
+function submitOrder(){
+    if(!validateAll()) return;
+    // Populate confirmation
+    const d=delData[selDelivery],c=d.price,t=basePrice+c;
+    document.getElementById('conf-del-method').textContent=d.name;
+    document.getElementById('conf-del-detail').textContent=d.detail||'—';
+    document.getElementById('conf-total').textContent=t.toLocaleString('pl-PL')+' zł';
+    document.getElementById('conf-pay-method').textContent=selPayment?payNames[selPayment]||selPayment:'—';
+    document.getElementById('conf-email').textContent=document.getElementById('inp-email').value||'—';
+    switchView('view-confirm');
+}
+
+// ===== COUPON =====
+function applyCoupon(){const v=document.getElementById('coupon-input').value.trim();if(!v)return;document.getElementById('coupon-box').innerHTML='<div style="display:flex;align-items:center;gap:6px;padding-top:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg><span style="font-size:12px;color:#2E7D32;font-weight:600">Kod \"'+v+'\" zastosowany</span></div>';}
+
+// ===== AUTO-FILL CITY FROM ZIP =====
+const zipMap={'00':'Warszawa','01':'Warszawa','02':'Warszawa','03':'Warszawa','04':'Warszawa','05':'Warszawa','10':'Olsztyn','15':'Białystok','20':'Lublin','25':'Kielce','30':'Kraków','31':'Kraków','35':'Rzeszów','40':'Katowice','41':'Katowice','42':'Katowice','43':'Katowice','44':'Katowice','45':'Opole','50':'Wrocław','51':'Wrocław','53':'Wrocław','54':'Wrocław','55':'Wrocław','58':'Wrocław','60':'Poznań','61':'Poznań','65':'Zielona Góra','70':'Szczecin','71':'Szczecin','75':'Koszalin','80':'Gdańsk','81':'Gdynia','85':'Bydgoszcz','87':'Toruń','90':'Łódź','91':'Łódź','92':'Łódź','93':'Łódź','94':'Łódź'};
+document.addEventListener('input',function(e){
+    if(!e.target.classList.contains('cour-kod'))return;
+    const v=e.target.value.replace(/\D/g,'');
+    if(v.length>=2){
+        const city=zipMap[v.substring(0,2)];
+        if(city){const m=e.target.closest('.cour-form')?.querySelector('.cour-miasto');if(m&&!m.value){m.value=city;m.classList.add('filled');}}
+    }
+});
+</script>
+</body>
+</html>
