@@ -183,14 +183,12 @@
         .consent-select-all .csa-hint { font-size: 12px; color: #4ade80; margin-left: auto; }
         /* Marketing group card */
         .mkt-group { background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
-        .mkt-group-title { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
         .mkt-channels { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
         .mkt-chip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #fff; border: 1.5px solid #e0e0e0; border-radius: 20px; cursor: pointer; transition: all .15s; user-select: none; }
         .mkt-chip:hover { border-color: #16a34a; background: #f0fdf4; }
         .mkt-chip.checked { border-color: #16a34a; background: #f0fdf4; }
         .mkt-chip input[type="checkbox"] { width: 15px; height: 15px; accent-color: #16a34a; flex-shrink: 0; }
         .mkt-chip label { font-size: 13px; color: #333; cursor: pointer; white-space: nowrap; }
-        .mkt-chip .chip-icon { font-size: 15px; }
         .uwagi-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1a1a1a; text-decoration: underline; cursor: pointer; margin-top: 4px; }
         .uwagi-toggle svg { width: 12px; height: 12px; }
         .uwagi-panel { max-height: 0; overflow: hidden; transition: max-height .3s; }
@@ -398,12 +396,11 @@
                         <span class="csa-hint">Zalecane</span>
                     </div>
                     <div class="mkt-group">
-                        <div class="mkt-group-title">Zgody marketingowe</div>
                         <div class="consent-desc">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
                         <div class="mkt-channels">
-                            <label class="mkt-chip" id="chip-email"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span class="chip-icon">✉</span><span>E-mail</span></label>
-                            <label class="mkt-chip" id="chip-phone"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span class="chip-icon">📞</span><span>Połączeń telefonicznych</span></label>
-                            <label class="mkt-chip" id="chip-msg"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span class="chip-icon">💬</span><span>WhatsApp/Messenger/SMS</span></label>
+                            <label class="mkt-chip" id="chip-email"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span>E-mail</span></label>
+                            <label class="mkt-chip" id="chip-phone"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span>Połączeń telefonicznych</span></label>
+                            <label class="mkt-chip" id="chip-msg"><input type="checkbox" class="mkt-cb" onchange="updateChips()"><span>WhatsApp/Messenger/SMS</span></label>
                         </div>
                     </div>
                     <div style="margin-top:4px;"><div class="cb-row"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div></div>
