@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyfrowe.pl – Zoptymalizowany Checkout</title>
+    <title>Cyfrowe.pl – Checkout v2 (Dostawa → Dane)</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #1a1a1a; background: #f5f5f5; line-height: 1.5; }
@@ -346,58 +346,7 @@
         </div>
         <div class="ck-body">
             <div class="ck-main">
-                <div class="sec-head" style="padding-top:0;">Moje dane</div>
-                <div class="contact-grid">
-                    <div class="fg has-icon"><input type="email" class="fi ic" placeholder=" " id="inp-email" oninput="checkEmail(this)"><span class="fi-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><label class="fl">E-mail*</label></div>
-                    <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel"><label class="fl">Telefon*</label></div>
-                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie"><label class="fl">Imię*</label></div>
-                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-nazwisko"><label class="fl">Nazwisko*</label></div>
-                </div>
-                <div class="login-prompt" id="login-prompt">
-                    <div class="lp-text">Masz już konto jako <strong id="lp-email"></strong>. Zaloguj się, aby przyspieszyć zakupy.</div>
-                    <div class="lp-row">
-                        <div class="fg"><input type="password" class="fi" placeholder=" " id="lp-pass"><label class="fl">Hasło</label></div>
-                        <button type="button" class="lp-btn" onclick="doLogin()">Zaloguj</button>
-                    </div>
-                    <a class="lp-skip" onclick="dismissLogin()">Kontynuuj bez logowania</a>
-                </div>
-                <!-- Faktura checkbox directly under Moje dane -->
-                <div style="margin-top:8px;">
-                    <div class="cb-row"><input type="checkbox" id="fak-check" onchange="toggleFak()"><label class="cb-text" for="fak-check"><strong>Chcę fakturę</strong></label></div>
-                    <div class="fak-form" id="fak-form">
-                        <div class="fak-type-toggle">
-                            <button type="button" class="fak-type-btn active" data-ft="firma" onclick="setFakType('firma')">Faktura na firmę</button>
-                            <button type="button" class="fak-type-btn" data-ft="osoba" onclick="setFakType('osoba')">Faktura na osobę prywatną</button>
-                        </div>
-                        <div class="fg"><select class="fi" id="fak-kraj" onchange="onKrajChange()"><option value="PL" selected>Polska</option><option value="DE">Niemcy</option><option value="CZ">Czechy</option><option value="SK">Słowacja</option><option value="LT">Litwa</option><option value="FR">Francja</option><option value="GB">Wielka Brytania</option><option value="OTHER">Inny kraj...</option></select><label class="fl">Kraj</label></div>
-                        <!-- FIRMA + PL -->
-                        <div class="fak-sub vis" id="fak-firma-pl">
-                            <div class="gus-row"><div class="fg" style="margin-bottom:0;"><input type="text" class="fi" placeholder=" " id="fak-nip-pl"><label class="fl">NIP*</label></div><button type="button" class="gus-btn" onclick="fetchGUS()" id="gus-btn">Pobierz z GUS</button></div>
-                            <div id="gus-result" style="display:none;"><div class="gus-result">
-                                <div class="gus-success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dane pobrane z GUS</div>
-                                <div class="fg"><input type="text" class="fi filled" value="Cyfrowe.pl Sp. z o.o." disabled placeholder=" " id="gus-firma"><label class="fl">Nazwa firmy</label></div>
-                                <div class="fr"><div class="fg"><input type="text" class="fi filled" value="Łostowicka" disabled placeholder=" " id="gus-ulica"><label class="fl">Ulica</label></div><div class="fg sm"><input type="text" class="fi filled" value="25A" disabled placeholder=" " id="gus-nrdomu"><label class="fl">Nr domu</label></div><div class="fg sm"><input type="text" class="fi filled" value="" disabled placeholder=" " id="gus-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
-                                <div class="fr"><div class="fg sm"><input type="text" class="fi filled" value="80-121" disabled placeholder=" " id="gus-kod"><label class="fl">Kod poczt.</label></div><div class="fg"><input type="text" class="fi filled" value="Gdańsk" disabled placeholder=" " id="gus-miasto"><label class="fl">Miasto</label></div></div>
-                            </div></div>
-                        </div>
-                        <!-- FIRMA + ZAGRANICA -->
-                        <div class="fak-sub" id="fak-firma-foreign">
-                            <div class="fg"><input type="text" class="fi" placeholder=" " id="ff-vatid"><label class="fl">VAT ID*</label></div>
-                            <div class="fg"><input type="text" class="fi" placeholder=" " id="ff-firma"><label class="fl">Nazwa firmy*</label></div>
-                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-ulica"><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-nrdomu"><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
-                            <div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-kod"><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-miasto"><label class="fl">Miasto*</label></div></div>
-                        </div>
-                        <!-- OSOBA PRYWATNA -->
-                        <div class="fak-sub" id="fak-osoba">
-                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-imie"><label class="fl">Imię*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-nazwisko"><label class="fl">Nazwisko*</label></div></div>
-                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fo-ulica"><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-nrdomu"><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
-                            <div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-kod"><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fo-miasto"><label class="fl">Miasto*</label></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="section-sep">
-                <div class="sec-head">Metoda dostawy</div>
+                <div class="sec-head" style="padding-top:0;">Metoda dostawy</div>
 
                 <div class="dc" data-m="paczkomat" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#E30613;color:#fff;padding:0 2px;border-radius:1px;">Paczkomaty 24/7</span></div><div class="dc-info"><span class="nm">InPost Paczkomat 24/7</span><span class="sub">1–2 dni robocze</span></div><span class="dc-price">14 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
                     <div class="pm-map" id="pm-map" onclick="event.stopPropagation();openPaczkomatMap()">
@@ -427,6 +376,53 @@
                         <div class="salon-radio" data-salon="warszawa" onclick="event.stopPropagation();selSalon(this)"><div class="salon-rb"><div class="sdot"></div></div><div class="sr-info"><div class="sr-name">Warszawa</div><div class="sr-detail"><div class="sr-addr">ul. Marszałkowska 27/35, 00-639 Warszawa</div><div class="sr-hours">pon–pt 10:00–19:00 | sob 10:00–15:00</div></div></div><div class="sr-check">&#10003;</div></div>
                     </div>
                 </div></div></div>
+
+                <hr class="section-sep">
+                <div class="sec-head">Moje dane</div>
+                <div class="contact-grid">
+                    <div class="fg has-icon"><input type="email" class="fi ic" placeholder=" " id="inp-email" oninput="checkEmail(this)"><span class="fi-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><label class="fl">E-mail*</label></div>
+                    <div class="fg"><input type="tel" class="fi" placeholder=" " id="inp-tel"><label class="fl">Telefon*</label></div>
+                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie"><label class="fl">Imię*</label></div>
+                    <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-nazwisko"><label class="fl">Nazwisko*</label></div>
+                </div>
+                <div class="login-prompt" id="login-prompt">
+                    <div class="lp-text">Masz już konto jako <strong id="lp-email"></strong>. Zaloguj się, aby przyspieszyć zakupy.</div>
+                    <div class="lp-row">
+                        <div class="fg"><input type="password" class="fi" placeholder=" " id="lp-pass"><label class="fl">Hasło</label></div>
+                        <button type="button" class="lp-btn" onclick="doLogin()">Zaloguj</button>
+                    </div>
+                    <a class="lp-skip" onclick="dismissLogin()">Kontynuuj bez logowania</a>
+                </div>
+                <div style="margin-top:8px;">
+                    <div class="cb-row"><input type="checkbox" id="fak-check" onchange="toggleFak()"><label class="cb-text" for="fak-check"><strong>Chcę fakturę</strong></label></div>
+                    <div class="fak-form" id="fak-form">
+                        <div class="fak-type-toggle">
+                            <button type="button" class="fak-type-btn active" data-ft="firma" onclick="setFakType('firma')">Faktura na firmę</button>
+                            <button type="button" class="fak-type-btn" data-ft="osoba" onclick="setFakType('osoba')">Faktura na osobę prywatną</button>
+                        </div>
+                        <div class="fg"><select class="fi" id="fak-kraj" onchange="onKrajChange()"><option value="PL" selected>Polska</option><option value="DE">Niemcy</option><option value="CZ">Czechy</option><option value="SK">Słowacja</option><option value="LT">Litwa</option><option value="FR">Francja</option><option value="GB">Wielka Brytania</option><option value="OTHER">Inny kraj...</option></select><label class="fl">Kraj</label></div>
+                        <div class="fak-sub vis" id="fak-firma-pl">
+                            <div class="gus-row"><div class="fg" style="margin-bottom:0;"><input type="text" class="fi" placeholder=" " id="fak-nip-pl"><label class="fl">NIP*</label></div><button type="button" class="gus-btn" onclick="fetchGUS()" id="gus-btn">Pobierz z GUS</button></div>
+                            <div id="gus-result" style="display:none;"><div class="gus-result">
+                                <div class="gus-success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dane pobrane z GUS</div>
+                                <div class="fg"><input type="text" class="fi filled" value="Cyfrowe.pl Sp. z o.o." disabled placeholder=" " id="gus-firma"><label class="fl">Nazwa firmy</label></div>
+                                <div class="fr"><div class="fg"><input type="text" class="fi filled" value="Łostowicka" disabled placeholder=" " id="gus-ulica"><label class="fl">Ulica</label></div><div class="fg sm"><input type="text" class="fi filled" value="25A" disabled placeholder=" " id="gus-nrdomu"><label class="fl">Nr domu</label></div><div class="fg sm"><input type="text" class="fi filled" value="" disabled placeholder=" " id="gus-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
+                                <div class="fr"><div class="fg sm"><input type="text" class="fi filled" value="80-121" disabled placeholder=" " id="gus-kod"><label class="fl">Kod poczt.</label></div><div class="fg"><input type="text" class="fi filled" value="Gdańsk" disabled placeholder=" " id="gus-miasto"><label class="fl">Miasto</label></div></div>
+                            </div></div>
+                        </div>
+                        <div class="fak-sub" id="fak-firma-foreign">
+                            <div class="fg"><input type="text" class="fi" placeholder=" " id="ff-vatid"><label class="fl">VAT ID*</label></div>
+                            <div class="fg"><input type="text" class="fi" placeholder=" " id="ff-firma"><label class="fl">Nazwa firmy*</label></div>
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-ulica"><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-nrdomu"><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
+                            <div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" " id="ff-kod"><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="ff-miasto"><label class="fl">Miasto*</label></div></div>
+                        </div>
+                        <div class="fak-sub" id="fak-osoba">
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-imie"><label class="fl">Imię*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fak-os-nazwisko"><label class="fl">Nazwisko*</label></div></div>
+                            <div class="fr"><div class="fg"><input type="text" class="fi" placeholder=" " id="fo-ulica"><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-nrdomu"><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-nrmiesz"><label class="fl">Nr mieszk.</label></div></div>
+                            <div class="fr"><div class="fg sm"><input type="text" class="fi" placeholder=" " id="fo-kod"><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi" placeholder=" " id="fo-miasto"><label class="fl">Miasto*</label></div></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <aside class="ck-side">
                 <div class="side-card">
