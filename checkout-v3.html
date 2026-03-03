@@ -277,7 +277,7 @@
 
 <!-- ② TWOJE DANE -->
 <div class="ck locked" id="sec-data">
-    <div class="ck-h" onclick="editSection('data')"><div class="ck-num">2</div><div class="ck-title">Twoje dane</div><span class="ck-status"></span><a class="ck-edit">Zmień</a></div>
+    <div class="ck-h" onclick="editSection('data')"><div class="ck-num">2</div><div class="ck-title">Moje dane</div><span class="ck-status"></span><a class="ck-edit">Zmień</a></div>
     <div class="ck-b"><div class="ck-b-inner">
         <div class="cg">
             <div class="fg"><input type="text" class="fi" placeholder=" " id="inp-imie"><label class="fl">Imię*</label><span class="val-msg"></span></div>
@@ -486,6 +486,15 @@ function submitCourierAddr(btn){
     const addr=ulica+' '+nrdomu+(nrmiesz?'/'+nrmiesz:'')+', '+kod+' '+miasto;
     delData[selDelivery].detail=addr;
     document.getElementById('sum-delivery').textContent=delData[selDelivery].name+' \u00b7 '+addr;
+    // Pre-fill name fields in Moje dane from courier name
+    const courName=form.querySelector('.cour-name')?.value.trim();
+    if(courName){
+        const parts=courName.split(/\s+/);
+        const imieEl=document.getElementById('inp-imie');
+        const nazwEl=document.getElementById('inp-nazwisko');
+        if(imieEl&&!imieEl.value&&parts.length>=1){imieEl.value=parts[0];imieEl.dispatchEvent(new Event('input'));}
+        if(nazwEl&&!nazwEl.value&&parts.length>=2){nazwEl.value=parts.slice(1).join(' ');nazwEl.dispatchEvent(new Event('input'));}
+    }
     setTimeout(()=>completeSection('delivery'),300);
 }
 
@@ -493,11 +502,13 @@ function selSalon(el){
     document.querySelectorAll('.salon-radio').forEach(r=>r.classList.remove('sel'));
     el.classList.add('sel');
     const name=el.querySelector('.sr-name').textContent;
-    delData['salon'].detail=name;
-    // Auto-complete delivery
+    const addr=el.querySelector('.sr-addr')?.textContent||'';
+    delData['salon'].detail=name+(addr?' \u00b7 '+addr:'');
     document.getElementById('sum-delivery').textContent='Odbiór w salonie \u00b7 '+name;
-    setTimeout(()=>completeSection('delivery'),400);
     updateFloatBar();
+    // Show confirm button
+    let btn=document.getElementById('salon-confirm-btn');
+    if(!btn){btn=document.createElement('button');btn.id='salon-confirm-btn';btn.className='cour-btn';btn.textContent='Potwierdź salon';btn.style.marginTop='10px';btn.onclick=function(e){e.stopPropagation();setTimeout(()=>completeSection('delivery'),300);};document.getElementById('salon-list').after(btn);}
 }
 
 function openPaczkomatMap(){setTimeout(()=>selectPaczkomat('WAW31N','Siedmiogrodzka 11, 01-232 Warszawa','Przy markecie Api'),300);}
