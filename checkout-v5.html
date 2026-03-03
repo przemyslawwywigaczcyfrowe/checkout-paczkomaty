@@ -169,17 +169,21 @@
         .gc-chk { width: 16px; height: 16px; border: 2px solid #ccc; border-radius: 3px; flex-shrink: 0; }
 
         /* ===== CONSENTS ===== */
-        .consent-area { padding-top: 0; }
+        .consent-area { padding-top: 16px; margin-top: 20px; border-top: 1px solid #eee; }
         .cb-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer; }
         .cb-row input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: #1a1a1a; }
         .cb-text { font-size: 13px; color: #444; line-height: 1.5; }
         .cb-text a { color: #1a1a1a; text-decoration: underline; }
         .cb-text strong { font-weight: 600; }
         .consent-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+        .consent-collapsed { display: none; margin-top: 8px; }
+        .consent-collapsed.vis { display: block; }
+        .consent-details-link { font-size: 11px; color: #999; text-decoration: underline; cursor: pointer; display: inline-block; margin-top: 4px; }
         /* Consent channels */
-        .mkt-channels { display: flex; flex-direction: column; gap: 0; margin-bottom: 14px; }
-        .mkt-channels label { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #1a1a1a; cursor: pointer; padding: 8px 0; }
-        .mkt-channels input[type="checkbox"] { width: 18px; height: 18px; accent-color: #1a1a1a; flex-shrink: 0; }
+        .mkt-section { padding: 10px 14px; background: #FAFAFA; border-radius: 4px; margin-bottom: 14px; transition: background .3s; }
+        .mkt-channels { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-bottom: 0; margin-top: 8px; }
+        .mkt-channels label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; cursor: pointer; padding: 6px 0; }
+        .mkt-channels input[type="checkbox"] { width: 16px; height: 16px; accent-color: #1a1a1a; flex-shrink: 0; }
         .uwagi-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1a1a1a; text-decoration: underline; cursor: pointer; margin-top: 4px; }
         .uwagi-toggle svg { width: 12px; height: 12px; }
         .uwagi-panel { max-height: 0; overflow: hidden; transition: max-height .3s; }
@@ -374,16 +378,18 @@
 
                 <!-- ZGODY -->
 
-                <div class="sec-head">Zgody</div>
                 <div class="consent-area">
-                    <div class="cb-row" style="margin-bottom:14px"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all" style="font-weight:600;color:#1a1a1a">Zaznacz wszystkie</label></div>
-                    <div class="consent-desc">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
-                    <div class="mkt-channels">
-                        <label><input type="checkbox" class="mkt-cb"> E-mail</label>
-                        <label><input type="checkbox" class="mkt-cb"> Połączeń telefonicznych</label>
-                        <label><input type="checkbox" class="mkt-cb"> WhatsApp/Messenger/SMS</label>
+                    <div class="cb-row" style="margin-bottom:16px"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div>
+                    <div class="mkt-section">
+                        <div class="cb-row" style="margin-bottom:0"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all" style="font-weight:600;color:#1a1a1a">Zaznacz wszystkie</label></div>
+                        <div class="mkt-channels">
+                            <label><input type="checkbox" class="mkt-cb"> E-mail</label>
+                            <label><input type="checkbox" class="mkt-cb"> Połączeń telefonicznych</label>
+                            <label><input type="checkbox" class="mkt-cb"> WhatsApp/Messenger/SMS</label>
+                        </div>
                     </div>
-                    <div class="cb-row"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div>
+                    <a class="consent-details-link" onclick="this.nextElementSibling.classList.toggle('vis')">Szczegóły przetwarzania danych ▾</a>
+                    <div class="consent-desc consent-collapsed">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
                 </div>
 
                 <!-- UWAGI -->
@@ -572,6 +578,14 @@ function updateSidebar(){
 }
 
 function toggleAll(cb){const ch=cb.checked;document.querySelectorAll('.mkt-cb').forEach(c=>c.checked=ch);document.getElementById('c-req').checked=ch;}
+
+// Subtle highlight on mkt-section after c-req is checked
+document.addEventListener('DOMContentLoaded',function(){
+    var cr=document.getElementById('c-req');
+    if(cr)cr.addEventListener('change',function(){
+        if(this.checked){var ms=document.querySelector('.mkt-section');if(ms){ms.style.background='#FFFDE7';setTimeout(function(){ms.style.background='';},1500);}}
+    });
+});
 
 // EMAIL LOGIN CHECK
 const knownEmails=['konto@cyfrowe.pl'];
