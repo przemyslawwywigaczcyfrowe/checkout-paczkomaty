@@ -27,8 +27,8 @@
         .ck-side { width: 310px; flex-shrink: 0; position: sticky; top: 20px; }
         .ck-title { font-size: 22px; font-weight: 700; padding: 24px 32px 0; }
 
-        .sec-head { font-size: 18px; font-weight: 700; padding: 24px 0 16px; border-top: 4px solid #eee; margin-top: 24px; padding-top: 24px; }
-        .sec-head:first-child { padding-top: 0; margin-top: 0; border-top: none; }
+        .sec-head { font-size: 18px; font-weight: 700; padding: 24px 0 16px; margin-top: 24px; }
+        .sec-head:first-child { padding-top: 0; margin-top: 0; }
 
         /* ===== FORM FIELDS ===== */
         .fg { position: relative; margin-bottom: 12px; }
@@ -89,10 +89,10 @@
         .fak-sub.vis { display: block; }
 
         /* ===== DELIVERY CARDS ===== */
-        .dc { border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 6px; transition: border-color .15s; cursor: pointer; overflow: hidden; }
+        .dc { border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px; transition: border-color .15s; cursor: pointer; overflow: hidden; }
         .dc:hover { border-color: #bbb; }
         .dc.sel { border-color: #1a1a1a; border-width: 2px; cursor: default; }
-        .dc-head { display: flex; align-items: center; padding: 12px 14px; gap: 12px; }
+        .dc-head { display: flex; align-items: center; padding: 14px 18px; gap: 12px; }
         .dc-radio { width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color .15s; }
         .dc.sel .dc-radio { border-color: #1a1a1a; }
         .dc-radio .dot { width: 10px; height: 10px; border-radius: 50%; background: #1a1a1a; transform: scale(0); transition: transform .15s; }
@@ -147,10 +147,10 @@
         .salon-radio.sel .sr-check { opacity: 1; }
 
         /* ===== PAYMENT ===== */
-        .pc { border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 5px; cursor: pointer; transition: border-color .15s; overflow: hidden; }
+        .pc { border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: border-color .15s; overflow: hidden; }
         .pc:hover { border-color: #bbb; }
         .pc.sel { border-color: #1a1a1a; border-width: 2px; }
-        .pc-head { display: flex; align-items: center; padding: 10px 14px; gap: 12px; }
+        .pc-head { display: flex; align-items: center; padding: 14px 18px; gap: 12px; }
         .pc-radio { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .pc.sel .pc-radio { border-color: #1a1a1a; }
         .pc-radio .dot { width: 9px; height: 9px; border-radius: 50%; background: #1a1a1a; transform: scale(0); transition: transform .15s; }
@@ -164,7 +164,7 @@
         .gpay-exp { max-height: 0; overflow: hidden; transition: max-height .25s; }
         .pc.sel .gpay-exp { max-height: 50px; }
         .gpay-hint { padding: 8px 14px; border-top: 1px solid #eee; font-size: 11px; color: #4CAF50; display: flex; align-items: center; gap: 6px; }
-        .gc { border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 5px; cursor: pointer; }
+        .gc { border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; }
         .gc-head { display: flex; align-items: center; padding: 10px 14px; gap: 12px; }
         .gc-chk { width: 16px; height: 16px; border: 2px solid #ccc; border-radius: 3px; flex-shrink: 0; }
 
@@ -175,14 +175,10 @@
         .cb-text { font-size: 13px; color: #444; line-height: 1.5; }
         .cb-text a { color: #1a1a1a; text-decoration: underline; }
         .cb-text strong { font-weight: 600; }
-        .consent-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
-        .consent-collapsed { display: none; margin-top: 8px; }
-        .consent-collapsed.vis { display: block; }
-        .consent-details-link { font-size: 11px; color: #999; text-decoration: underline; cursor: pointer; display: inline-block; margin-top: 4px; }
-        /* Consent channels */
-        .mkt-section { padding: 10px 14px; background: #FAFAFA; border-radius: 4px; margin-bottom: 14px; transition: background .3s; }
-        .mkt-channels { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-bottom: 0; margin-top: 8px; }
-        .mkt-channels label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; cursor: pointer; padding: 6px 0; }
+        .consent-desc { font-size: 11px; color: #888; line-height: 1.6; margin: 4px 0 14px 28px; }
+        .consent-desc a { color: #666; }
+        .mkt-channels { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 14px 28px; }
+        .mkt-channels label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #444; cursor: pointer; padding: 6px 0; }
         .mkt-channels input[type="checkbox"] { width: 16px; height: 16px; accent-color: #1a1a1a; flex-shrink: 0; }
         .uwagi-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1a1a1a; text-decoration: underline; cursor: pointer; margin-top: 4px; }
         .uwagi-toggle svg { width: 12px; height: 12px; }
@@ -214,7 +210,7 @@
         .gd { width: 6px; height: 6px; background: #4CAF50; border-radius: 50%; display: inline-block; }
 
         /* ===== MAIN CTA (bottom of form) ===== */
-        .main-cta-wrap { padding: 24px 0 0; margin-top: 8px; border-top: 1px solid #e8e8e8; }
+        .main-cta-wrap { padding: 24px 0 0; margin-top: 8px; }
 
         /* ===== CONFIRMATION ===== */
         .conf-hero { text-align: center; padding: 48px 20px 32px; }
@@ -347,11 +343,11 @@
                     </div>
                 </div></div></div>
 
-                <div class="dc" data-m="kurier-dpd" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon dpd" style="font-size:9px;"><b>dpd</b></div><div class="dc-info"><span class="nm">Kurier DPD</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">15 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+                <div class="dc" data-m="kurier-dpd" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon dpd" style="font-size:9px;"><b>dpd</b></div><div class="dc-info"><span class="nm">Kurier DPD</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">15 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fr"><div class="fg"><input type="text" class="fi cour-imie" placeholder=" "><label class="fl">Imię*</label></div><div class="fg"><input type="text" class="fi cour-nazwisko" placeholder=" "><label class="fl">Nazwisko*</label></div></div><div class="fg"><input type="text" class="fi cour-telefon" placeholder=" "><label class="fl">Telefon*</label></div><div class="fg"><input type="text" class="fi cour-firma" placeholder=" "><label class="fl">Nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszkania</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod pocztowy*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
 
-                <div class="dc" data-m="kurier-inpost" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost-k" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#1a1a1a;color:#fff;padding:0 2px;border-radius:1px;">Kurier</span></div><div class="dc-info"><span class="nm">Kurier InPost</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">17 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+                <div class="dc" data-m="kurier-inpost" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon inpost-k" style="font-size:7px;line-height:1;text-align:center;"><b>InPost</b><br><span style="font-size:5px;background:#1a1a1a;color:#fff;padding:0 2px;border-radius:1px;">Kurier</span></div><div class="dc-info"><span class="nm">Kurier InPost</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">17 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fr"><div class="fg"><input type="text" class="fi cour-imie" placeholder=" "><label class="fl">Imię*</label></div><div class="fg"><input type="text" class="fi cour-nazwisko" placeholder=" "><label class="fl">Nazwisko*</label></div></div><div class="fg"><input type="text" class="fi cour-telefon" placeholder=" "><label class="fl">Telefon*</label></div><div class="fg"><input type="text" class="fi cour-firma" placeholder=" "><label class="fl">Nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszkania</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod pocztowy*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
 
-                <div class="dc" data-m="kurier-pocztex" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon pocztex" style="font-size:8px;"><b>PP</b></div><div class="dc-info"><span class="nm">Kurier Pocztex</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">19 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fg"><input type="text" class="fi cour-name" placeholder=" "><label class="fl">Imię i nazwisko lub nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszk.</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod poczt.*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
+                <div class="dc" data-m="kurier-pocztex" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon pocztex" style="font-size:8px;"><b>PP</b></div><div class="dc-info"><span class="nm">Kurier Pocztex</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">19 zł</span></div><div class="dc-exp"><div class="dc-exp-inner"><div class="cour-form"><div class="cour-label">Adres dostawy</div><div class="fr"><div class="fg"><input type="text" class="fi cour-imie" placeholder=" "><label class="fl">Imię*</label></div><div class="fg"><input type="text" class="fi cour-nazwisko" placeholder=" "><label class="fl">Nazwisko*</label></div></div><div class="fg"><input type="text" class="fi cour-telefon" placeholder=" "><label class="fl">Telefon*</label></div><div class="fg"><input type="text" class="fi cour-firma" placeholder=" "><label class="fl">Nazwa firmy</label></div><div class="fr"><div class="fg"><input type="text" class="fi cour-ulica" placeholder=" "><label class="fl">Ulica*</label></div><div class="fg sm"><input type="text" class="fi cour-nrdomu" placeholder=" "><label class="fl">Nr domu*</label></div><div class="fg sm"><input type="text" class="fi cour-nrmiesz" placeholder=" "><label class="fl">Nr mieszkania</label></div></div><div class="fr"><div class="fg sm"><input type="text" class="fi cour-kod" placeholder=" "><label class="fl">Kod pocztowy*</label></div><div class="fg"><input type="text" class="fi cour-miasto" placeholder=" "><label class="fl">Miasto*</label></div></div><div class="fg"><input type="text" class="fi" placeholder=" "><label class="fl">Wskazówki dla kuriera</label></div></div></div></div></div>
 
                 <div class="dc salon" data-m="salon" onclick="selDel(this)"><div class="dc-head"><div class="dc-radio"><div class="dot"></div></div><div class="dc-icon salon-i">&#128722;</div><div class="dc-info"><span class="nm">Odbiór w salonie Cyfrowe.pl</span><span class="sub">Gdańsk, Katowice, Kraków, Łódź, Poznań, Warszawa</span><span class="sub">dostawa: <b>wt. 4 marca</b></span></div><span class="dc-price">0 zł</span></div><div class="dc-exp"><div class="dc-exp-inner">
                     <div class="salon-list" id="salon-list">
@@ -379,16 +375,15 @@
                 <!-- ZGODY -->
 
                 <div class="consent-area">
-                    <div class="cb-row" style="margin-bottom:16px"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong><br><span style="color:#666;font-size:12px;">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</span></label></div>
-                    <div class="cb-row" style="margin-bottom:10px"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all" style="font-weight:600;color:#1a1a1a">Zaznacz wszystkie</label></div>
-                    <div class="mkt-section">
-                        <div class="consent-desc" style="margin-bottom:10px">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
-                        <div class="mkt-channels">
-                            <label><input type="checkbox" class="mkt-cb"> E-mail</label>
-                            <label><input type="checkbox" class="mkt-cb"> Połączeń telefonicznych</label>
-                            <label><input type="checkbox" class="mkt-cb"> WhatsApp/Messenger/SMS</label>
-                        </div>
+                    <div class="cb-row" style="margin-bottom:16px"><input type="checkbox" id="c-all" onchange="toggleAll(this)"><label class="cb-text" for="c-all" style="font-weight:700;color:#1a1a1a;font-size:14px">Zaznacz wszystkie</label></div>
+                    <div class="consent-desc">Wyrażam zgodę na otrzymywanie od Cyfrowe.pl informacji handlowych za pośrednictwem zaznaczonych kanałów poniżej, jednocześnie wyrażam zgodę na przetwarzanie danych osobowych: adres e-mail, numer telefonu, identyfikator komunikatora, przez Cyfrowe.pl Sp. z o.o., zgodnie z <a href="#">Polityką prywatności</a>, w celu przesyłania informacji handlowych, jedynie za pośrednictwem kanałów, które zostały przeze mnie zaznaczone. Podstawą prawną jest moja dobrowolna zgoda (art. 6 ust. 1 lit. a RODO). Wycofanie zgody jest możliwe w każdej chwili i nie wpływa na zgodność z prawem przetwarzania, którego dokonano przed jej wycofaniem.</div>
+                    <div class="mkt-channels">
+                        <label><input type="checkbox" class="mkt-cb"> E-mail</label>
+                        <label><input type="checkbox" class="mkt-cb"> Połączeń telefonicznych</label>
+                        <label><input type="checkbox" class="mkt-cb"> WhatsApp/Messenger/SMS</label>
                     </div>
+                    <div class="cb-row"><input type="checkbox" id="c-req"><label class="cb-text" for="c-req"><strong>*Akceptuję zasady sprzedaży i wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia.</strong></label></div>
+                    <div class="consent-desc">Oświadczam, że zapoznałem się z <a href="#">Regulaminem</a> sklepu i z obowiązującymi <a href="#">Zasadami Sprzedaży</a> sklepu internetowego cyfrowe.pl oraz <a href="#">Polityką Prywatności</a> zawierającą informacje na temat przetwarzania danych osobowych. Wyrażam zgodę na przetwarzanie moich danych osobowych w postaci imienia, nazwiska, adresu, numeru telefonu i adresu email w celu realizacji zamówienia.</div>
                 </div>
 
                 <!-- UWAGI -->
@@ -512,24 +507,27 @@ function prefillCourierFromFaktura(card){
     const nazw=document.getElementById('inp-nazwisko').value;
     const form=card.querySelector('.cour-form');
     if(!form)return;
-    const nameField=form.querySelector('.cour-name');
-    if(nameField&&!nameField.value&&(imie||nazw)){
-        nameField.value=(imie+' '+nazw).trim();nameField.classList.add('filled');
-    }
+    const imieField=form.querySelector('.cour-imie');
+    const nazwField=form.querySelector('.cour-nazwisko');
+    const telField=form.querySelector('.cour-telefon');
+    if(imieField&&!imieField.value&&imie){imieField.value=imie;imieField.classList.add('filled');}
+    if(nazwField&&!nazwField.value&&nazw){nazwField.value=nazw;nazwField.classList.add('filled');}
+    const tel=document.getElementById('inp-telefon').value;
+    if(telField&&!telField.value&&tel){telField.value=tel;telField.classList.add('filled');}
     if(!document.getElementById('fak-check').checked)return;
     let src={};
     if(fakType==='firma'){
         const isPL=document.getElementById('fak-kraj').value==='PL';
         if(isPL&&document.getElementById('gus-result').style.display!=='none'){
-            src={name:document.getElementById('gus-firma').value,ulica:document.getElementById('gus-ulica').value,nrdomu:document.getElementById('gus-nrdomu').value,nrmiesz:document.getElementById('gus-nrmiesz').value,kod:document.getElementById('gus-kod').value,miasto:document.getElementById('gus-miasto').value};
+            src={firma:document.getElementById('gus-firma').value,ulica:document.getElementById('gus-ulica').value,nrdomu:document.getElementById('gus-nrdomu').value,nrmiesz:document.getElementById('gus-nrmiesz').value,kod:document.getElementById('gus-kod').value,miasto:document.getElementById('gus-miasto').value};
         } else if(!isPL){
-            src={name:document.getElementById('ff-firma').value,ulica:document.getElementById('ff-ulica').value,nrdomu:document.getElementById('ff-nrdomu').value,nrmiesz:document.getElementById('ff-nrmiesz').value,kod:document.getElementById('ff-kod').value,miasto:document.getElementById('ff-miasto').value};
+            src={firma:document.getElementById('ff-firma').value,ulica:document.getElementById('ff-ulica').value,nrdomu:document.getElementById('ff-nrdomu').value,nrmiesz:document.getElementById('ff-nrmiesz').value,kod:document.getElementById('ff-kod').value,miasto:document.getElementById('ff-miasto').value};
         }
     } else {
-        src={name:(document.getElementById('fak-os-imie').value+' '+document.getElementById('fak-os-nazwisko').value).trim(),ulica:document.getElementById('fo-ulica').value,nrdomu:document.getElementById('fo-nrdomu').value,nrmiesz:document.getElementById('fo-nrmiesz').value,kod:document.getElementById('fo-kod').value,miasto:document.getElementById('fo-miasto').value};
+        src={ulica:document.getElementById('fo-ulica').value,nrdomu:document.getElementById('fo-nrdomu').value,nrmiesz:document.getElementById('fo-nrmiesz').value,kod:document.getElementById('fo-kod').value,miasto:document.getElementById('fo-miasto').value};
     }
     function fill(sel,val){const el=form.querySelector(sel);if(el&&val&&!el.value){el.value=val;el.classList.add('filled');}}
-    if(src.name)fill('.cour-name',src.name);
+    if(src.firma)fill('.cour-firma',src.firma);
     fill('.cour-ulica',src.ulica);fill('.cour-nrdomu',src.nrdomu);fill('.cour-nrmiesz',src.nrmiesz);fill('.cour-kod',src.kod);fill('.cour-miasto',src.miasto);
 }
 
@@ -715,7 +713,7 @@ function validateAll(){
     if(selDelivery&&delData[selDelivery].type==='kurier'){
         const card=document.querySelector('.dc.sel');
         if(card){
-            card.querySelectorAll('.cour-ulica,.cour-nrdomu,.cour-kod,.cour-miasto').forEach(inp=>{
+            card.querySelectorAll('.cour-imie,.cour-nazwisko,.cour-telefon,.cour-ulica,.cour-nrdomu,.cour-kod,.cour-miasto').forEach(inp=>{
                 if(!validateCourierField(inp)){ok=false;if(!firstErr)firstErr=inp;}
                 if(!inp.dataset.valBound){
                     inp.dataset.valBound='1';
